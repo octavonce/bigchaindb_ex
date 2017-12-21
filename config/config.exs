@@ -5,6 +5,8 @@ use Mix.Config
 config :bigchain_ex, 
   host: "localhost",
   port: 9984,
-  https: false
+  https: false,
+  app_id: nil,
+  app_key: nil
 
 # if Mix.env == :test, do: import_config "test.exs"
