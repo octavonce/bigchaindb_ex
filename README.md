@@ -1,6 +1,6 @@
 # BigchainEx
 
-**A driver for bigchaindb written in elixir**
+A driver for bigchaindb written in elixir
 
 ## Installation
 
