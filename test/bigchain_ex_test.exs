@@ -1,4 +1,3 @@
 defmodule BigchainExTest do
-  use ExUnit.Case
-  doctest BigchainEx
+  use BigchainEx.TestCase
 end

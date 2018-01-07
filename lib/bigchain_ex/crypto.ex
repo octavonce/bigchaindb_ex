@@ -1,20 +1,58 @@
 defmodule BigchainEx.Crypto do
   @moduledoc """
-  This module provides cryptography utilities.
+    This module provides cryptography utilities.
   """
 
-  @doc """
-  Generates a public and private key pair.
+  alias BigchainEx.Base58
 
-  ## Example
-    iex> BigchainEx.Crypto.generate_key_pair()
-    
-    {"044A9AD8D64C39C41D577A98D3BA80930F30D6D8AAF614A38A20952019FFFA40A095E159B1049755D06531E84910EDA161AEFA7D29F347A45077E0CEB8EBD9215E",
-    "0777C775631DBC21ED3AA5526C905BC122AEE7B9EB6C2C1F9F17345346906778"}
+  @doc """
+    Generates a public and private key pair.
+
+    ## Example
+      iex> BigchainEx.Crypto.generate_key_pair()
+      
+      {"Nb7NxsJVntGK8RkbFqeDZ6ZrbNFuetXofQEYPtSku3RnXSzC2HWH2PjH3jPAD7DnHAsYWRiP85CUcmfxrmTQdR22",
+      "6F18nEJLGKuh3ctSnT62KSmfs9xEJR1B8iEqJxSwNqq3"}
   """
   @spec generate_keypair :: {String.t, String.t}
   def generate_keypair do
     {pub, priv} = :crypto.generate_key(:ecdh, :secp256k1)
-    {Base.encode64(pub), Base.encode64(priv)}
+    {encode_base58(pub), encode_base58(priv)}
+  end
+
+  @doc """
+    Generates a public key from a 
+    given private key.
+  """
+  @spec generate_pub_key(String.t) :: {:ok, String.t} | {:error, String.t}
+  def generate_pub_key(priv_key) do
+    case decode_base58(priv_key) do
+      {:ok, key} ->
+        {pub, _} = :crypto.generate_key(:ecdh, :secp256k1, key)
+        {:ok, encode_base58(pub)}
+      _ -> {:error, "Could not decode the given private key!"}
+    end
+  end
+
+  @doc """
+    Encodes a binary to a 
+    base58 encoded string.
+  """
+  @spec encode_base58(binary) :: String.t
+  def encode_base58(str) when is_binary(str) or is_bitstring(str) do
+    hex_str = Base.encode16(str)
+    {int, _} = Integer.parse(hex_str, 16)
+    Base58.encode(int)
+  end
+
+  @doc """
+    Decodes a base58 encoded string
+  """
+  @spec decode_base58(String.t) :: {:ok, binary} | :error
+  def decode_base58(str) when is_binary(str) do
+    str
+    |> Base58.decode
+    |> Integer.to_string(16) 
+    |> Base.decode16
   end
 end

@@ -1,6 +1,6 @@
 defmodule BigchainEx.Http do
   @moduledoc """
-  Bigchaindb http client
+    Bigchaindb http client
   """
 
   use HTTPotion.Base

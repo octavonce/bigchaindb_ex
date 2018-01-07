@@ -1,5 +1,5 @@
 defmodule BigchainExTransactionTest do
-  use ExUnit.Case
+  use BigchainEx.TestCase
 
   test "prepare/1 CREATE - should ok" do
     {pub, _} = BigchainEx.Crypto.generate_keypair

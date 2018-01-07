@@ -10,7 +10,7 @@ by adding `bigchain_ex` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:bigchain_ex, "~> 0.1.0"}
+    {:bigchain_ex, "~> 0.1"}
   ]
 end
 ```

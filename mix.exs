@@ -22,7 +22,8 @@ defmodule BigchainEx.Mixfile do
   defp deps do
     [
       {:httpotion, "~> 3.0.2"},
-      {:poison, "~> 3.1"}
+      {:poison, "~> 3.1"},
+      {:eqc_ex, "~> 1.4", only: [:test]}
     ]
   end
 end
