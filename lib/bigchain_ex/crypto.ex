@@ -84,7 +84,7 @@ defmodule BigchainEx.Crypto do
     decoded = str
     |> Base58.decode
     |> Integer.to_string(16)
-    |> (fn x -> (if x |> String.length |> Integer.is_odd, do: "0#{x}", else: x) end).()
+    |> (fn x -> (if String.length(x) |> Integer.is_odd, do: "0#{x}", else: x) end).()
     |> Hexate.decode
 
     {:ok, decoded}

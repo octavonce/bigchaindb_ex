@@ -2,8 +2,8 @@ defmodule BigchainEx.Transaction do
   @type t :: %__MODULE__{
     operation: String.t,
     asset: Map.t,
-    signers: Enum.t | String.t | Tuple.t,
-    recipients: Enum.t | String.t | Tuple.t,
+    inputs: Enum.t,
+    outputs: Enum.t,
     metadata: Map.t
   }
 
@@ -12,8 +12,8 @@ defmodule BigchainEx.Transaction do
   defstruct [
     :operation,
     :asset,
-    :signers,
-    :recipients,
+    :inputs,
+    :outputs,
     :metadata
   ]
 
@@ -38,22 +38,21 @@ defmodule BigchainEx.Transaction do
   """
   @spec prepare(prepare_opts) :: {:ok, __MODULE__.t} | {:error, String.t}
   def prepare(opts) when is_list(opts), do: opts |> Enum.into(%{}) |> prepare()
-  def prepare(%{signers: []}), do: {:error, "At least one signer is required!"}
-  def prepare(opts = %{operation: "CREATE", asset: asset = %{data: _}, signers: signers}) 
-    when is_list(signers) 
-    or   is_binary(signers)
-    or   is_tuple(signers) 
-  do
+  def prepare(opts = %{signers: signer})  when is_binary(signer), do: prepare(Map.merge(opts, %{signers: [signer]}))
+  def prepare(opts = %{signers: signers}) when is_tuple(signers), do: prepare(Map.merge(%{signers: Tuple.to_list(signers)}))
+  def prepare(%{recipients: []}), do: {:error, "Each `recipient` in the list must be a tuple of `{[<list of public keys>], <amount>}`"}
+  def prepare(opts = %{operation: "CREATE", asset: asset = %{data: _}, signers: signers}) when is_list(signers)  do
     {:ok, %__MODULE__{
       operation: "CREATE",
       asset: asset,
       signers: signers,
+      recipients: [{signers, 1}],
       metadata: opts[:metadata] || %{}
     }}
   end
   def prepare(opts = %{operation: "CREATE", asset: asset = %{data: _}, signers: signers, recipients: recipients}) 
-    when (is_list(signers) or is_binary(signers) or is_tuple(signers)) 
-    and  (is_list(recipients) or is_binary(recipients) or is_tuple(recipients))
+    when is_list(signers) 
+    and  is_list(recipients)
   do
     {:ok, %__MODULE__{
       operation: "CREATE",
@@ -72,7 +71,7 @@ defmodule BigchainEx.Transaction do
       operation: "TRANSFER",
       asset: asset,
       signers: signers,
-      recipients: signers,
+      recipients: [{signers, 1}],
       metadata: opts[:metadata] || %{}
     }}
   end
@@ -97,8 +96,6 @@ defmodule BigchainEx.Transaction do
   def fulfill(%__MODULE__{} = tx, priv_key)  when is_binary(priv_key), do: fulfill(tx, [priv_key])
   def fulfill(%__MODULE__{} = tx, priv_keys) when is_tuple(priv_keys), do: fulfill(tx, Tuple.to_list(priv_keys))
   def fulfill(%__MODULE__{} = tx, priv_keys) when is_list(priv_keys) do
-    # https://github.com/bigchaindb/bigchaindb/blob/master/bigchaindb/common/transaction.py
-    
     # Generate public keys from the 
     # given private keys.
     key_pairs = Enum.map(priv_keys, fn p_key ->
@@ -137,9 +134,9 @@ defmodule BigchainEx.Transaction do
     Sends a fulfilled transaction to
     the bigchaindb cluster.
   """
-  @spec send(__MODULE__.t) :: {:ok, Transaction.t} | {:error, String.t}
+  @spec send(__MODULE__.t) :: {:ok, __MODULE__.t} | {:error, String.t}
   def send(%__MODULE__{} = tx) do
-    
+  
   end
 
   @spec retrieve(String.t) :: {:ok, __MODULE__.t} | {:error, String.t}
