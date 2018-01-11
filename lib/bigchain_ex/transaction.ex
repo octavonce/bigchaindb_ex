@@ -1,4 +1,6 @@
 defmodule BigchainEx.Transaction do
+  alias BigchainEx.Crypto
+
   @type t :: %__MODULE__{
     operation: String.t,
     asset: Map.t,
@@ -116,14 +118,74 @@ defmodule BigchainEx.Transaction do
       # Serialize the transaction to json
       result = tx
       |> Map.from_struct
+      |> serialize_outputs
       |> Poison.encode
-
+      
       case result do
         {:error, error} -> {:error, "Could not serialize transaction! Errors: #{inspect error}"}
         {:ok, serialized_tx} ->
           # Sign the transaction using the 
           # keys and the serialized tx
-          
+          signatures = Enum.map(key_pairs, fn {pub_key, priv_key} ->
+            case Crypto.sign(serialized_tx, priv_key) do
+              {:ok, signed}    -> {signed, pub_key} 
+              {:error, reason} -> {:error, reason}
+            end
+          end)
+
+          # Check for errors
+          errors = key_pairs
+          |> Enum.filter(fn x -> elem(x, 0) === :error end)
+          |> Enum.map(fn x -> {:error, key} = x; key end)
+
+          if Enum.count(errors) > 0 do
+            {:error, "Signing using the given private key/s failed: #{inspect errors}"}
+          else
+            verified_signatures = Enum.map(signatures, fn {sig, pub_key} -> 
+              {pub_key, sig, Crypto.verify(serialized_tx, sig, pub_key)}
+            end)
+
+            errors = verified_signatures
+            |> Enum.filter(fn x -> elem(x, 2) === false end)
+            |> Enum.map(fn x -> {key, _} = x; key end)
+
+            if Enum.count(errors) > 0 do
+              {:error, "Verifying using the given private key/s failed: #{inspect errors}"}
+            else
+              fulfilled_inputs = Enum.map(verified_signatures, fn {pub_key, _signature, _valid} ->
+                %{
+                  fulfillment: %{
+                    public_key: pub_key,
+                    type: "ed25519-sha-256"
+                  }
+                  fulfills: "None",
+                  owners_before: [pub_key]
+                }
+              end)
+
+              fulfilled_outputs = Enum.map(tx.outputs, fn {pub_keys, amount} -> 
+                %{
+                  amount: amount,
+                  condition: %{
+                    details: %{
+                      public_key: List.first(pub_keys),
+                      type: "ed25519-sha-256"
+                    },
+                    # TODO: Generate URI from asn1 encoded transaction
+                    uri: "",
+                    public_keys: pub_keys
+                  }
+                }
+              end)
+
+              fulfilled_tx = Map.merge(tx, %{
+                inputs: fulfilled_inputs,
+                outputs: fulfilled_outputs
+              })
+
+              {:ok, fulfilled_tx}
+            end
+          end
       end
     end
   end
@@ -147,5 +209,14 @@ defmodule BigchainEx.Transaction do
   @spec status(String.t) :: {:ok, __MODULE__.t} | {:error, String.t}
   def status(tx_id) when is_binary(tx_id) do
     
+  end
+
+  def serialize_outputs(tx) when is_map(tx) do 
+    Map.merge(tx, %{
+      outputs: Enum.map(tx.outputs, fn 
+        x when is_tuple(x) -> Tuple.to_list(x)
+        x                  -> x
+      end)
+    })
   end
 end

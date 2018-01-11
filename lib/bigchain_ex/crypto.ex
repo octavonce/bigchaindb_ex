@@ -38,7 +38,7 @@ defmodule BigchainEx.Crypto do
     Creates a signature based 
     on a given message and a private key.
   """
-  @spec sign(String.t, Enum.t) :: {:ok, binary} | {:error, String.t}
+  @spec sign(String.t, binary) :: {:ok, binary} | {:error, String.t}
   def sign(message, priv_key) when is_binary(message) and is_binary(priv_key) do
     case decode_base58(priv_key) do
       {:ok, key} -> {:ok, :crypto.sign(:ecdsa, :sha256, message, [key, :secp256k1])}
