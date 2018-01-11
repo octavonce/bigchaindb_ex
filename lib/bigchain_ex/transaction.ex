@@ -45,8 +45,8 @@ defmodule BigchainEx.Transaction do
     {:ok, %__MODULE__{
       operation: "CREATE",
       asset: asset,
-      signers: signers,
-      recipients: [{signers, 1}],
+      inputs: signers,
+      outputs: [{signers, 1}],
       metadata: opts[:metadata] || %{}
     }}
   end
@@ -57,8 +57,8 @@ defmodule BigchainEx.Transaction do
     {:ok, %__MODULE__{
       operation: "CREATE",
       asset: asset,
-      signers: signers,
-      recipients: recipients,
+      inputs: signers,
+      outputs: recipients,
       metadata: opts[:metadata] || %{}
     }}
   end
@@ -70,8 +70,8 @@ defmodule BigchainEx.Transaction do
     {:ok, %__MODULE__{
       operation: "TRANSFER",
       asset: asset,
-      signers: signers,
-      recipients: [{signers, 1}],
+      inputs: signers,
+      outputs: [{signers, 1}],
       metadata: opts[:metadata] || %{}
     }}
   end
@@ -82,8 +82,8 @@ defmodule BigchainEx.Transaction do
     {:ok, %__MODULE__{
       operation: "TRANSFER",
       asset: asset,
-      signers: signers,
-      recipients: recipients,
+      inputs: signers,
+      outputs: recipients,
       metadata: opts[:metadata] || %{}
     }}
   end

@@ -6,6 +6,7 @@ defmodule BigchainEx.Mixfile do
       app: :bigchain_ex,
       version: "0.1.0",
       elixir: "~> 1.5",
+      erlc_paths: ["lib"],
       start_permanent: Mix.env == :prod,
       deps: deps()
     ]
