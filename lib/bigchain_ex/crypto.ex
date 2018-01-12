@@ -41,7 +41,7 @@ defmodule BigchainEx.Crypto do
   @spec sign(String.t, binary) :: {:ok, binary} | {:error, String.t}
   def sign(message, priv_key) when is_binary(message) and is_binary(priv_key) do
     case decode_base58(priv_key) do
-      {:ok, key} -> {:ok, :crypto.sign(:ecdsa, :sha256, message, [key, :secp256k1])}
+      {:ok, key} -> {:ok, :crypto.sign(:ecdsa, :sha256, message, [key, :secp256k1]) |> encode_base58}
       _          -> {:error, "Could not decode private key!"}
     end
   end

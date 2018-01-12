@@ -41,7 +41,7 @@ defmodule BigchainEx.Transaction do
   @spec prepare(prepare_opts) :: {:ok, __MODULE__.t} | {:error, String.t}
   def prepare(opts) when is_list(opts), do: opts |> Enum.into(%{}) |> prepare()
   def prepare(opts = %{signers: signer})  when is_binary(signer), do: prepare(Map.merge(opts, %{signers: [signer]}))
-  def prepare(opts = %{signers: signers}) when is_tuple(signers), do: prepare(Map.merge(%{signers: Tuple.to_list(signers)}))
+  def prepare(opts = %{signers: signers}) when is_tuple(signers), do: prepare(Map.merge(opts, %{signers: Tuple.to_list(signers)}))
   def prepare(%{recipients: []}), do: {:error, "Each `recipient` in the list must be a tuple of `{[<list of public keys>], <amount>}`"}
   def prepare(opts = %{operation: "CREATE", asset: asset = %{data: _}, signers: signers}) when is_list(signers)  do
     {:ok, %__MODULE__{
@@ -157,7 +157,7 @@ defmodule BigchainEx.Transaction do
                   fulfillment: %{
                     public_key: pub_key,
                     type: "ed25519-sha-256"
-                  }
+                  },
                   fulfills: "None",
                   owners_before: [pub_key]
                 }
