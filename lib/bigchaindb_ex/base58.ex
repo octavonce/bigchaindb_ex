@@ -1,4 +1,4 @@
-defmodule BigchainEx.Base58 do
+defmodule BigchaindbEx.Base58 do
   @alphabet ~c(123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ)
 
   @doc """

@@ -1,9 +1,9 @@
-defmodule BigchainEx.Mixfile do
+defmodule BigchaindbEx.Mixfile do
   use Mix.Project
 
   def project do
     [
-      app: :bigchain_ex,
+      app: :bigchaindb_ex,
       version: "0.1.0",
       elixir: "~> 1.5",
       erlc_paths: ["lib"],

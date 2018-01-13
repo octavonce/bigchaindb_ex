@@ -1,5 +1,5 @@
-defmodule BigchainEx.Transaction do
-  alias BigchainEx.{Crypto, Utils}
+defmodule BigchaindbEx.Transaction do
+  alias BigchaindbEx.{Crypto, Utils}
 
   @type t :: %__MODULE__{
     operation: String.t,
@@ -34,7 +34,7 @@ defmodule BigchainEx.Transaction do
     Prepares a transaction.
 
     ## Example
-      iex> BigchainEx.Transaction.prepare(operation: "CREATE", signers: [signer1, signer2], asset: %{data: %{bicycle: %{serial_no: 232134, manufacturer: "SpeedWheels"}}})
+      iex> BigchaindbEx.Transaction.prepare(operation: "CREATE", signers: [signer1, signer2], asset: %{data: %{bicycle: %{serial_no: 232134, manufacturer: "SpeedWheels"}}})
       
       {:ok, tx}
   """
@@ -102,7 +102,7 @@ defmodule BigchainEx.Transaction do
     # Generate public keys from the 
     # given private keys.
     key_pairs = Enum.map(priv_keys, fn p_key ->
-      case BigchainEx.Crypto.generate_pub_key(p_key) do
+      case BigchaindbEx.Crypto.generate_pub_key(p_key) do
         {:ok, pub_key} -> {pub_key, p_key}
         {:error, _}    -> {:error, p_key}
       end

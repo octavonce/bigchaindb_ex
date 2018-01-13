@@ -1,3 +1,3 @@
-defmodule BigchainExTest do
-  use BigchainEx.TestCase
+defmodule BigchaindbExTest do
+  use BigchaindbEx.TestCase
 end

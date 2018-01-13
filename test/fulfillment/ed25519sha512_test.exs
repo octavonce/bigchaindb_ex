@@ -1,8 +1,8 @@
-defmodule BigchainEx.Fulfillment.Ed25519Sha512Test do
-  use BigchainEx.TestCase
+defmodule BigchaindbEx.Fulfillment.Ed25519Sha512Test do
+  use BigchaindbEx.TestCase
 
-  alias BigchainEx.Crypto
-  alias BigchainEx.Fulfillment.Ed25519Sha512
+  alias BigchaindbEx.Crypto
+  alias BigchaindbEx.Fulfillment.Ed25519Sha512
 
   property "asn1_decode/1" do
     forall {{pub_key, priv_key}, message} <- {keypair(), random_string()} do

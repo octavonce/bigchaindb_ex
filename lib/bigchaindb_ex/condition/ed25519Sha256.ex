@@ -1,4 +1,4 @@
-defmodule BigchainEx.Condition.Ed25519Sha256 do
+defmodule BigchaindbEx.Condition.Ed25519Sha256 do
   @id 4
   @type_name "ed25519-sha-256"
   @asn1 "ed25519Sha256"

@@ -1,10 +1,10 @@
-defmodule BigchainEx.TestCase do
+defmodule BigchaindbEx.TestCase do
   use ExUnit.CaseTemplate
   
   using do
     quote do
       use EQC.ExUnit
-      import BigchainEx.Generators
+      import BigchaindbEx.Generators
     end
   end
 

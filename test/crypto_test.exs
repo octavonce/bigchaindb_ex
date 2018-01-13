@@ -1,6 +1,6 @@
-defmodule BigchainExCryptoTest do
-  use BigchainEx.TestCase
-  alias BigchainEx.{Crypto, Base58}
+defmodule BigchaindbExCryptoTest do
+  use BigchaindbEx.TestCase
+  alias BigchaindbEx.{Crypto, Base58}
 
   property "generate_pub_key/2" do
     forall {pub_key, priv_key} <- keypair() do

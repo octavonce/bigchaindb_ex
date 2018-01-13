@@ -1,4 +1,4 @@
-defmodule BigchainEx.Utils do
+defmodule BigchaindbEx.Utils do
   @doc """
     Generates a unix timestamp with
     the current date and time.

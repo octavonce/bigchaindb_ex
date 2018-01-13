@@ -1,5 +1,5 @@
-defmodule BigchainEx.Fulfillment.Ed25519Sha512 do
-  alias BigchainEx.Crypto
+defmodule BigchaindbEx.Fulfillment.Ed25519Sha512 do
+  alias BigchaindbEx.Crypto
 
   @doc """
     Encodes a given public key and 

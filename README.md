@@ -1,16 +1,16 @@
-# BigchainEx
+# BigchaindbEx
 
 A driver for bigchaindb written in elixir
 
 ## Installation
 
-BigchainEx can be installed
-by adding `bigchain_ex` to your list of dependencies in `mix.exs`:
+BigchaindbEx can be installed
+by adding `bigchaindb_ex` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
   [
-    {:bigchain_ex, "~> 0.1"}
+    {:bigchaindb_ex, "~> 0.1"}
   ]
 end
 ```

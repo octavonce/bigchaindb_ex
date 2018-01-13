@@ -1,15 +1,15 @@
-defmodule BigchainEx.Http do
+defmodule BigchaindbEx.Http do
   @moduledoc """
     Bigchaindb http client
   """
 
   use HTTPotion.Base
 
-  @host    Application.get_env(:bigchain_ex, :host)
-  @port    Application.get_env(:bigchain_ex, :port)
-  @https   Application.get_env(:bigchain_ex, :https)
-  @app_id  Application.get_env(:bigchain_ex, :app_id)
-  @app_key Application.get_env(:bigchain_ex, :app_key)
+  @host    Application.get_env(:bigchaindb_ex, :host)
+  @port    Application.get_env(:bigchaindb_ex, :port)
+  @https   Application.get_env(:bigchaindb_ex, :https)
+  @app_id  Application.get_env(:bigchaindb_ex, :app_id)
+  @app_key Application.get_env(:bigchaindb_ex, :app_key)
 
   def process_url(url) do
     path = url

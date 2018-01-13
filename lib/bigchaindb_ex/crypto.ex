@@ -1,16 +1,16 @@
-defmodule BigchainEx.Crypto do
+defmodule BigchaindbEx.Crypto do
   @moduledoc """
     This module provides cryptography utilities.
   """
 
   require Integer
-  alias BigchainEx.Base58
+  alias BigchaindbEx.Base58
 
   @doc """
     Generates a public and private key pair.
 
     ## Example
-      iex> BigchainEx.Crypto.generate_key_pair()
+      iex> BigchaindbEx.Crypto.generate_key_pair()
       
       {"Nb7NxsJVntGK8RkbFqeDZ6ZrbNFuetXofQEYPtSku3RnXSzC2HWH2PjH3jPAD7DnHAsYWRiP85CUcmfxrmTQdR22",
       "6F18nEJLGKuh3ctSnT62KSmfs9xEJR1B8iEqJxSwNqq3"}

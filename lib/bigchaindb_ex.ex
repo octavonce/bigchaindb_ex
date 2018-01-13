@@ -1,6 +1,6 @@
-defmodule BigchainEx do
+defmodule BigchaindbEx do
   @moduledoc """
-    Documentation for BigchainEx.
+    Documentation for BigchaindbEx.
   """
 
   @doc """
@@ -8,7 +8,7 @@ defmodule BigchainEx do
     bigchaindb endpoint.
   """
   def api_info do
-    BigchainEx.Http.get("")
+    BigchaindbEx.Http.get("")
   end
 
   @doc """
@@ -17,6 +17,6 @@ defmodule BigchainEx do
     block id parameter.
   """  
   def block(block_id) when is_binary(block_id) do
-    BigchainEx.Http.get("/api/v1/blocks/#{block_id}")
+    BigchaindbEx.Http.get("/api/v1/blocks/#{block_id}")
   end
 end
