@@ -10,10 +10,8 @@ defmodule BigchainExCryptoTest do
   end
 
   property "verify/3" do
-    forall {pub_key, priv_key} <- keypair() do
-      message = "Hello world!"
+    forall {{pub_key, priv_key}, message} <- {keypair(), random_string()} do
       {:ok, sig} = Crypto.sign(message, priv_key)
-
       Crypto.verify(message, sig, pub_key)
     end 
   end
@@ -36,5 +34,19 @@ defmodule BigchainExCryptoTest do
 
       decoded === x
     end
+  end
+
+  property "remove_base64_padding/1" do
+    forall {pub_key, _} <- keypair() do
+      hex_pub_key = pub_key |> Base58.decode |> Integer.to_string(16)
+      padded = "0" <> hex_pub_key
+
+      unpadded = padded 
+      |> Crypto.remove_base64_padding
+      |> Crypto.remove_base64_padding
+      |> Crypto.remove_base64_padding
+
+      unpadded === hex_pub_key
+    end 
   end
 end

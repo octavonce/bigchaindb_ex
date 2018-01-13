@@ -3,6 +3,7 @@ defmodule BigchainEx.Crypto do
     This module provides cryptography utilities.
   """
 
+  require Integer
   alias BigchainEx.Base58
 
   @doc """
@@ -75,12 +76,10 @@ defmodule BigchainEx.Crypto do
   end
 
   @doc """
-    Decodes a base58 encoded string
+    Decodes a base58 encoded string.
   """
   @spec decode_base58(String.t) :: {:ok, binary} | {:error, RuntimeError.t}
   def decode_base58(str) when is_binary(str) do
-    require Integer
-
     decoded = str
     |> Base58.decode
     |> Integer.to_string(16)
@@ -90,5 +89,18 @@ defmodule BigchainEx.Crypto do
     {:ok, decoded}
   rescue
     e in RuntimeError -> {:error, e}
+  end
+
+  @doc """
+    Removes the padding from 
+    a given hex string.
+  """
+  @spec remove_base64_padding(String.t) :: String.t 
+  def remove_base64_padding(string) when is_binary(string) do
+    if String.length(string) |> Integer.is_odd do
+      string
+    else
+      String.slice(string, 1..String.length(string))
+    end 
   end
 end

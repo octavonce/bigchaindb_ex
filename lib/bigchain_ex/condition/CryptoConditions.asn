@@ -1,0 +1,29 @@
+CryptoConditions DEFINITIONS AUTOMATIC TAGS ::= BEGIN
+  -- Conditions
+  Condition ::= CHOICE {
+    preimageSha256   [0] SimpleSha256Condition,
+    prefixSha256     [1] CompoundSha256Condition,
+    thresholdSha256  [2] CompoundSha256Condition,
+    rsaSha256        [3] SimpleSha256Condition,
+    ed25519Sha256    [4] SimpleSha256Condition
+  }
+
+  SimpleSha256Condition ::= SEQUENCE {
+    fingerprint          OCTET STRING (SIZE(32)),
+    cost                 INTEGER (0..4294967295)
+  }
+
+  CompoundSha256Condition ::= SEQUENCE {
+    fingerprint          OCTET STRING (SIZE(32)),
+    cost                 INTEGER (0..4294967295),
+    subtypes             ConditionTypes
+  }
+
+  ConditionTypes ::= BIT STRING {
+    preImageSha256   (0),
+    prefixSha256     (1),
+    thresholdSha256  (2),
+    rsaSha256        (3),
+    ed25519Sha256    (4)
+  }
+END

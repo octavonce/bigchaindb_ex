@@ -1,5 +1,5 @@
 defmodule BigchainEx.Transaction do
-  alias BigchainEx.Crypto
+  alias BigchainEx.{Crypto, Utils}
 
   @type t :: %__MODULE__{
     operation: String.t,
@@ -42,6 +42,7 @@ defmodule BigchainEx.Transaction do
   def prepare(opts) when is_list(opts), do: opts |> Enum.into(%{}) |> prepare()
   def prepare(opts = %{signers: signer})  when is_binary(signer), do: prepare(Map.merge(opts, %{signers: [signer]}))
   def prepare(opts = %{signers: signers}) when is_tuple(signers), do: prepare(Map.merge(opts, %{signers: Tuple.to_list(signers)}))
+  def prepare(%{signers: []}), do: {:error, "No signers given! Please provide at least one signer!"}
   def prepare(%{recipients: []}), do: {:error, "Each `recipient` in the list must be a tuple of `{[<list of public keys>], <amount>}`"}
   def prepare(opts = %{operation: "CREATE", asset: asset = %{data: _}, signers: signers}) when is_list(signers)  do
     {:ok, %__MODULE__{
@@ -156,7 +157,7 @@ defmodule BigchainEx.Transaction do
                 %{
                   fulfillment: %{
                     public_key: pub_key,
-                    type: "ed25519-sha-256"
+                    type: "ed25519-sha-256" # TODO: Add support for multiple condition types
                   },
                   fulfills: "None",
                   owners_before: [pub_key]
@@ -169,7 +170,7 @@ defmodule BigchainEx.Transaction do
                   condition: %{
                     details: %{
                       public_key: List.first(pub_keys),
-                      type: "ed25519-sha-256"
+                      type: "ed25519-sha-256" # TODO: Add support for multiple condition types
                     },
                     # TODO: Generate URI from asn1 encoded transaction
                     uri: "",
@@ -180,7 +181,9 @@ defmodule BigchainEx.Transaction do
 
               fulfilled_tx = Map.merge(tx, %{
                 inputs: fulfilled_inputs,
-                outputs: fulfilled_outputs
+                outputs: fulfilled_outputs,
+                version: "1.0",
+                timestamp: Utils.gen_timestamp()
               })
 
               {:ok, fulfilled_tx}
@@ -211,7 +214,7 @@ defmodule BigchainEx.Transaction do
     
   end
 
-  def serialize_outputs(tx) when is_map(tx) do 
+  defp serialize_outputs(tx) when is_map(tx) do 
     Map.merge(tx, %{
       outputs: Enum.map(tx.outputs, fn 
         x when is_tuple(x) -> Tuple.to_list(x)
