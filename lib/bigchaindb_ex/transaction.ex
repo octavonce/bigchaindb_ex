@@ -6,7 +6,11 @@ defmodule BigchaindbEx.Transaction do
     asset: Map.t,
     inputs: Enum.t,
     outputs: Enum.t,
-    metadata: Map.t
+    metadata: Map.t,
+    fulfillments: Enum.t,
+    conditions: Enum.t,
+    version: String.t,
+    timestamp: String.t
   }
 
   @enforce_keys [:operation]
@@ -16,7 +20,11 @@ defmodule BigchaindbEx.Transaction do
     :asset,
     :inputs,
     :outputs,
-    :metadata
+    :metadata,
+    :version,
+    :fulfillments,
+    :conditions,
+    :timestamp
   ]
 
   @typedoc """
@@ -159,7 +167,7 @@ defmodule BigchaindbEx.Transaction do
                     public_key: pub_key,
                     type: "ed25519-sha-256" # TODO: Add support for multiple condition types
                   },
-                  fulfills: "None",
+                  fulfills: nil,
                   owners_before: [pub_key]
                 }
               end)
