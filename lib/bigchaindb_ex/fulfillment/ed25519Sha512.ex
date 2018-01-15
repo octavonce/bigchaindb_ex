@@ -25,10 +25,10 @@ defmodule BigchaindbEx.Fulfillment.Ed25519Sha512 do
     Decodes an asn1 encoded binary
     to it's base58 representation.
   """
-  @spec asn1_decode(bitstring) :: {:ok, String.t} | {:error, String.t}
+  @spec asn1_decode(bitstring) :: {:ok, %{public_key: String.t, signature: String.t}} | {:error, String.t}
   def asn1_decode(bytes) when is_bitstring(bytes) do
     case :Fulfillments.decode(:Ed25519Sha512Fulfillment, bytes) do
-      {:ok, result}    -> {:ok, Crypto.encode_base58(result)}
+      {:ok, {_, pub_key, signature}} -> {:ok, %{public_key: Crypto.encode_base58(pub_key), signature: Crypto.encode_base58(signature)}}
       {:error, reason} -> {:error, "Could not decode fulfillment: #{inspect reason}"}
     end
   end
