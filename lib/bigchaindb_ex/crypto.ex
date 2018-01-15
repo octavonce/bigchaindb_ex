@@ -90,6 +90,19 @@ defmodule BigchaindbEx.Crypto do
   rescue
     e in RuntimeError -> {:error, e}
   end
+ 
+  @doc """
+    Adds padding to a hex string.
+  """
+  def add_base64_padding(string) when is_binary(string) do
+    missing_padding = (4 - byte_size(string)) |> rem(4)  
+
+    if missing_padding > 0 do
+      Enum.reduce(0..missing_padding, string, fn (_, acc) -> acc <> "=" end)
+    else
+      string
+    end
+  end
 
   @doc """
     Removes the padding from 
@@ -97,10 +110,6 @@ defmodule BigchaindbEx.Crypto do
   """
   @spec remove_base64_padding(String.t) :: String.t 
   def remove_base64_padding(string) when is_binary(string) do
-    if String.length(string) |> Integer.is_odd do
-      string
-    else
-      String.slice(string, 1..String.length(string))
-    end 
+    String.replace(string, "=", "")
   end
 end

@@ -40,7 +40,7 @@ defmodule BigchaindbEx.Condition.Ed25519Sha256 do
 
   @doc """
     Serializes a given hash
-    to a url-friendly format.
+    to an url-friendly format.
   """
   @spec serialize_to_uri(bitstring) :: binary
   def serialize_to_uri(hash) when is_bitstring(hash) do

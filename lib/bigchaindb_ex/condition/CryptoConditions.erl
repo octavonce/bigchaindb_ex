@@ -30,7 +30,7 @@ dec_ConditionTypes/2
 
 -export([encode/2,decode/2]).
 
-encoding_rule() -> ber.
+encoding_rule() -> der.
 
 maps() -> false.
 

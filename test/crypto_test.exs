@@ -36,17 +36,17 @@ defmodule BigchaindbExCryptoTest do
     end
   end
 
+  test "add_base64_padding/1" do
+    assert Base.encode64("I")   |> Crypto.add_base64_padding === "SQ=="
+    assert Base.encode64("AM")  |> Crypto.add_base64_padding === "QU0="
+    assert Base.encode64("TJM") |> Crypto.add_base64_padding === "VEpN"
+  end
+
   property "remove_base64_padding/1" do
     forall {pub_key, _} <- keypair() do
       hex_pub_key = pub_key |> Base58.decode |> Integer.to_string(16)
-      padded = "0" <> hex_pub_key
-
-      unpadded = padded 
-      |> Crypto.remove_base64_padding
-      |> Crypto.remove_base64_padding
-      |> Crypto.remove_base64_padding
-
-      unpadded === hex_pub_key
+      padded = Crypto.add_base64_padding(hex_pub_key)
+      Crypto.remove_base64_padding(padded) === hex_pub_key
     end 
   end
 end
