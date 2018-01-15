@@ -5,6 +5,12 @@ defmodule BigchaindbExCryptoTest do
   property "generate_pub_key/2" do
     forall {pub_key, priv_key} <- keypair() do
       {:ok, key} = Crypto.generate_pub_key(priv_key)
+      {:ok, decoded} = Crypto.decode_base58(pub_key)
+
+      pub_key = decoded 
+      |> :enacl.crypto_sign_ed25519_public_to_curve25519 
+      |> Crypto.encode_base58
+
       key === pub_key
     end
   end

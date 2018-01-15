@@ -10,14 +10,11 @@ defmodule BigchaindbEx.Crypto do
     Generates a public and private key pair.
 
     ## Example
-      iex> BigchaindbEx.Crypto.generate_key_pair()
-      
-      {"Nb7NxsJVntGK8RkbFqeDZ6ZrbNFuetXofQEYPtSku3RnXSzC2HWH2PjH3jPAD7DnHAsYWRiP85CUcmfxrmTQdR22",
-      "6F18nEJLGKuh3ctSnT62KSmfs9xEJR1B8iEqJxSwNqq3"}
+      iex> {pub_key, priv_key} = BigchaindbEx.Crypto.generate_key_pair()
   """
   @spec generate_keypair :: {String.t, String.t}
   def generate_keypair do
-    {pub, priv} = :crypto.generate_key(:ecdh, :secp256k1)
+    %{public: pub, secret: priv} = :enacl.crypto_sign_ed25519_keypair
     {encode_base58(pub), encode_base58(priv)}
   end
 
@@ -29,8 +26,12 @@ defmodule BigchaindbEx.Crypto do
   def generate_pub_key(priv_key) when is_binary(priv_key) do
     case decode_base58(priv_key) do
       {:ok, key} ->
-        {pub, _} = :crypto.generate_key(:ecdh, :secp256k1, key)
-        {:ok, encode_base58(pub)}
+        result = key
+        |> :enacl.crypto_sign_ed25519_secret_to_curve25519
+        |> :enacl_ext.curve25519_public_key
+        |> encode_base58
+
+        {:ok, result}
       _ -> {:error, "Could not decode the given private key!"}
     end
   end
@@ -42,7 +43,7 @@ defmodule BigchaindbEx.Crypto do
   @spec sign(String.t, binary) :: {:ok, binary} | {:error, String.t}
   def sign(message, priv_key) when is_binary(message) and is_binary(priv_key) do
     case decode_base58(priv_key) do
-      {:ok, key} -> {:ok, :crypto.sign(:ecdsa, :sha256, message, [key, :secp256k1]) |> encode_base58}
+      {:ok, key} -> {:ok, :enacl.sign_detached(message, key) |> encode_base58}
       _          -> {:error, "Could not decode private key!"}
     end
   end
@@ -58,9 +59,15 @@ defmodule BigchaindbEx.Crypto do
     and  is_binary(signature) 
     and  is_binary(pub_key) 
   do
-    case decode_base58(pub_key) do
-      {:ok, decoded} -> :crypto.verify(:ecdsa, :sha256, message, signature, [decoded, :secp256k1])
-      _              -> raise "Could not decode public key!"
+    with {:ok, pub_key}   <- decode_base58(pub_key),
+         {:ok, signature} <- decode_base58(signature)
+    do
+      case :enacl.sign_verify_detached(signature, message, pub_key) do
+        {:ok, _}    -> true
+        {:error, _} -> false
+      end
+    else
+      _ -> raise "Could not decode public key!"
     end
   end
 

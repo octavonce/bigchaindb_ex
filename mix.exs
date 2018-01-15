@@ -25,6 +25,7 @@ defmodule BigchaindbEx.Mixfile do
       {:httpotion, "~> 3.0.2"},
       {:poison, "~> 3.1"},
       {:hexate,  ">= 0.6.0"},
+      {:enacl, github: "jlouis/enacl", tag: "master"},
       {:eqc_ex, "~> 1.4", only: [:test]}
     ]
   end
