@@ -1,15 +1,42 @@
 defmodule BigchaindbEx.Fulfillment.Ed25519Sha512 do
   alias BigchaindbEx.Crypto
 
+  @enforce_keys [
+    :public_key,
+    :signature
+  ]
+
+  defstruct [
+    :public_key,
+    :signature
+  ]
+
+  def from_json(json) when is_binary(json) do
+    case Poison.decode(json) do
+      {:ok, decoded} -> 
+        with {:ok, decoded_pub_key} <- Base.decode64(decoded["public_key"]),
+             {:ok, decoded_signature} <- Base.decode64(decoded["signature"]) 
+        do
+          %__MODULE__{
+            public_key: decoded_pub_key,
+            signature: decoded_signature
+          }
+        else
+          _ -> {:error, "Could not decode the public key or signature from the given json."}
+        end
+      {:error, reason} -> {:error, "There was an error when parsing the json: #{inspect reason}"}
+    end
+  end
+
   @doc """
     Encodes a given public key and 
     a signature to the asn1 binary
     format.
   """
-  @spec asn1_encode(%{public_key: String.t, signature: String.t}) :: {:ok, binary} | {:error, String.t}
-  def asn1_encode(%{public_key: public_key, signature: signature}) when is_binary(public_key) and is_binary(signature) do
+  @spec to_asn1(%{public_key: String.t, signature: String.t}) :: {:ok, binary} | {:error, String.t}
+  def to_asn1(%__MODULE__{} = %{public_key: public_key, signature: signature}) when is_binary(public_key) and is_binary(signature) do
     with {:ok, pub_key} <- Crypto.decode_base58(public_key),
-          {:ok, sig}     <- Crypto.decode_base58(signature)
+         {:ok, sig}     <- Crypto.decode_base58(signature)
     do
       if byte_size(pub_key) === 32 and byte_size(sig) === 64 do
         :Fulfillments.encode(:Ed25519Sha512Fulfillment, {:Ed25519Sha512Fulfillment, pub_key, sig})
@@ -25,10 +52,10 @@ defmodule BigchaindbEx.Fulfillment.Ed25519Sha512 do
     Decodes an asn1 encoded binary
     to it's base58 representation.
   """
-  @spec asn1_decode(bitstring) :: {:ok, %{public_key: String.t, signature: String.t}} | {:error, String.t}
-  def asn1_decode(bytes) when is_bitstring(bytes) do
+  @spec from_asn1(bitstring) :: {:ok, %__MODULE__{}} | {:error, String.t}
+  def from_asn1(bytes) when is_bitstring(bytes) do
     case :Fulfillments.decode(:Ed25519Sha512Fulfillment, bytes) do
-      {:ok, {_, pub_key, signature}} -> {:ok, %{public_key: Crypto.encode_base58(pub_key), signature: Crypto.encode_base58(signature)}}
+      {:ok, {_, pub_key, signature}} -> {:ok, %__MODULE__{public_key: Crypto.encode_base58(pub_key), signature: Crypto.encode_base58(signature)}}
       {:error, reason} -> {:error, "Could not decode fulfillment: #{inspect reason}"}
     end
   end
