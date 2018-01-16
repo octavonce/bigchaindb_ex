@@ -21,19 +21,23 @@ defmodule BigchaindbEx.Transaction.Output do
     :fulfillment
   ]
 
+  defmacro amount_is_valid(amount) do
+    quote do
+      is_integer(unquote(amount)) and unquote(amount) > 0 and unquote(amount) <= @max_amount
+    end
+  end
+
   @doc """
     Generates an output struct
     from the given public keys and 
     the given amount.
+
+    TODO: Add support for ThresholdSha256 Condition 
   """
   @spec generate(Enum.t, Integer.t) :: __MODULE__.t
   def generate([], _), do: {:error, "You must provide at least one public key!"}
-  def generate(public_key, amount) # TODO: Add support for ThresholdSha256 Condition 
-    when is_binary(public_key) 
-    and  is_integer(amount)
-    and  amount > 0
-    and  amount <= @max_amount
-  do
+  def generate([public_key], amount) when amount_is_valid(amount), do: generate(public_key, amount)
+  def generate(public_key, amount) when is_binary(public_key) and amount_is_valid(amount) do
     %__MODULE__{
       public_keys: [public_key],
       amount: amount,

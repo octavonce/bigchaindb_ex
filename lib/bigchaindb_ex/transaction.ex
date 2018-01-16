@@ -118,8 +118,8 @@ defmodule BigchaindbEx.Transaction do
 
     # Check for errors
     errors = key_pairs
-    |> Enum.filter(fn x -> elem(x, 0) === :error end)
-    |> Enum.map(fn x -> {:error, key} = x; key end)
+    |> Enum.filter(fn {atom, _} -> atom === :error end)
+    |> Enum.map(fn {_, key} -> key end)
 
     if Enum.count(errors) > 0 do
       {:error, "The following keys could not be decoded: #{inspect errors}"}
@@ -143,9 +143,9 @@ defmodule BigchaindbEx.Transaction do
           end)
 
           # Check for errors
-          errors = key_pairs
-          |> Enum.filter(fn x -> elem(x, 0) === :error end)
-          |> Enum.map(fn x -> {:error, key} = x; key end)
+          errors = signatures
+          |> Enum.filter(fn {atom, _} -> atom === :error end)
+          |> Enum.map(fn {_, key} -> key end)
 
           if Enum.count(errors) > 0 do
             {:error, "Signing using the given private key/s failed: #{inspect errors}"}
@@ -155,8 +155,8 @@ defmodule BigchaindbEx.Transaction do
             end)
 
             errors = verified_signatures
-            |> Enum.filter(fn x -> elem(x, 2) === false end)
-            |> Enum.map(fn x -> {key, _} = x; key end)
+            |> Enum.filter(fn {_, _, valid} -> not valid end)
+            |> Enum.map(fn {key, _} -> key end)
 
             if Enum.count(errors) > 0 do
               {:error, "Verifying using the given private key/s failed: #{inspect errors}"}

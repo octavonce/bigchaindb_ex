@@ -19,12 +19,12 @@ defmodule BigchaindbEx.Transaction.OutputTest do
     end
   end
 
-  def to_map_oracle(output) do
+  defp to_map_oracle(output) do
+    {:ok, uri} = Fulfillment.get_condition_uri(output.fulfillment)
     details = %{
       type: "ed25519-sha-256",
       public_key: output.fulfillment.public_key
     }
-    {:ok, uri} = Fulfillment.get_condition_uri(output.fulfillment)
 
     {:ok, %{
       public_keys: output.public_keys,

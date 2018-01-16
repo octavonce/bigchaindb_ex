@@ -1,6 +1,11 @@
 defmodule BigchaindbEx.Generators do
-  alias BigchaindbEx.Crypto
+  alias BigchaindbEx.{Crypto, Utils}
   alias BigchaindbEx.Transaction.Output
+
+  def gen_public_keys, do: gen_public_keys(Enum.random(1..1000))
+  def gen_public_keys(count) when is_integer(count) and count > 0 do
+    Utils.parallel_map(0..count, fn _ -> {pub_key, _} = keypair(); pub_key end) 
+  end
 
   def gen_output do
     {pub_key, _} = keypair
