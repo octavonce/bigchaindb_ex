@@ -1,5 +1,18 @@
 defmodule BigchaindbEx.Condition.Ed25519Sha256 do
   alias BigchaindbEx.Crypto
+  alias BigchaindbEx.Fulfillment
+
+  @type t :: %__MODULE__{
+    cost: Integer.t,
+    type_id: Integer.t,
+    hash: binary
+  }
+
+  defstruct [
+    :cost,
+    :type_id,
+    :hash
+  ]
 
   @id 4
   @type_name "ed25519-sha-256"
@@ -20,7 +33,24 @@ defmodule BigchaindbEx.Condition.Ed25519Sha256 do
   def type_category,         do: @category
   def type_cost,             do: @constant_cost
   def type_pub_key_length,   do: @public_key_length
-  def type_signature_length, do: @signature_length   
+  def type_signature_length, do: @signature_length 
+
+  @doc """
+    Derives the condition
+    from a given fulfillment.
+  """
+  @spec from_fulfillment(Fulfillment.Ed25519Sha512.t) :: {:ok, __MODULE__.t} | {:error, String.t}
+  def from_fulfillment(%Fulfillment.Ed25519Sha512{public_key: pub_key} = ffl) when is_binary(pub_key) do
+    case generate_hash(pub_key) do
+      {:ok, hash} -> {:ok, %__MODULE__{
+        cost: @constant_cost,
+        type_id: @id,
+        hash: hash
+      }}
+      {:error, reason} -> {:error, "Could not derive condition: #{inspect reason}"}
+    end
+  end
+  def from_fulfillment(_), do: {:error, "The given fulfillment is invalid!"}
   
   @doc """
     Generates a hash from a 
@@ -32,7 +62,7 @@ defmodule BigchaindbEx.Condition.Ed25519Sha256 do
     with {:ok, decoded} <- Crypto.decode_base58(public_key),
          {:ok, asn1_binary} <- :Fingerprints.encode(:Ed25519FingerprintContents, {nil, decoded})
     do
-      :crypto.hash(:sha256, asn1_binary)
+      {:ok, :crypto.hash(:sha256, asn1_binary)}
     else
       {:error, reason} -> {:error, "Could not decode public key: #{inspect reason}"}
     end

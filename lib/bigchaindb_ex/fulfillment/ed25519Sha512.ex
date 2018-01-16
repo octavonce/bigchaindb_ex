@@ -1,10 +1,10 @@
 defmodule BigchaindbEx.Fulfillment.Ed25519Sha512 do
   alias BigchaindbEx.Crypto
 
-  @enforce_keys [
-    :public_key,
-    :signature
-  ]
+  @type t :: %__MODULE__{
+    public_key: String.t,
+    signature: String.t
+  }
 
   defstruct [
     :public_key,
