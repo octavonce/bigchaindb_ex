@@ -1,4 +1,13 @@
 defmodule BigchaindbEx.Condition.Ed25519Sha256 do
+  @moduledoc """
+    ED25519: Ed25519 signature condition.
+
+    This condition implements Ed25519 signatures.
+    
+    ED25519 is assigned the type ID 4. It relies only on the ED25519 feature suite
+    which corresponds to a bitmask of 0x20.
+  """
+
   alias BigchaindbEx.Crypto
   alias BigchaindbEx.Fulfillment
 
@@ -14,7 +23,7 @@ defmodule BigchaindbEx.Condition.Ed25519Sha256 do
     :hash
   ]
 
-  @id 4
+  @type_id 4
   @type_name "ed25519-sha-256"
   @asn1 "ed25519Sha256"
   @asn1_condition "ed25519Sha256Condition"
@@ -25,7 +34,7 @@ defmodule BigchaindbEx.Condition.Ed25519Sha256 do
   @public_key_length 32
   @signature_length 64
 
-  def type_id,               do: @id
+  def type_id,               do: @type_id
   def type_name,             do: @type_name
   def type_asn1,             do: @asn1
   def type_asn1_condition,   do: @asn1_condition
@@ -44,7 +53,7 @@ defmodule BigchaindbEx.Condition.Ed25519Sha256 do
     case generate_hash(pub_key) do
       {:ok, hash} -> {:ok, %__MODULE__{
         cost: @constant_cost,
-        type_id: @id,
+        type_id: @type_id,
         hash: hash
       }}
       {:error, reason} -> {:error, "Could not derive condition: #{inspect reason}"}

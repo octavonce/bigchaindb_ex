@@ -30,4 +30,28 @@ defmodule BigchaindbEx.Fulfillment.Ed25519Sha512Test do
       Ed25519Sha512.from_json(encoded_json) === struct
     end
   end
+
+  property "serialize_uri/1" do
+    forall ffl <- gen_fulfillment() do
+      serialize_uri_oracle(ffl) === Ed25519Sha512.serialize_uri(ffl)
+    end
+  end
+
+  property "from_uri/1" do
+    forall ffl <- gen_fulfillment() do
+      {:ok, uri} = Ed25519Sha512.serialize_uri(ffl)
+      from_uri_oracle(uri) === Ed25519Sha512.from_uri(uri)
+    end
+  end
+
+  defp serialize_uri_oracle(ffl) do
+    {:ok, bin} = Ed25519Sha512.to_asn1(ffl)
+    {:ok, Base.encode64(bin, padding: false)}
+  end
+
+  defp from_uri_oracle(uri) do
+    {:ok, decoded} = Base.decode64(uri, padding: false)
+    {:ok, struct} = Ed25519Sha512.from_asn1(decoded)
+    {:ok, struct}
+  end
 end

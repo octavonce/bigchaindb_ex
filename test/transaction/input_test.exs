@@ -6,12 +6,12 @@ defmodule BigchaindbEx.Transaction.InputTest do
   # for output generation.
   # TODO: Make this pass
   property "generate/1" do
-    forall pub_keys <- gen_public_keys() do
+    forall pub_keys <- gen_public_keys(Enum.random(1..3)) do
       generate_oracle(pub_keys) === Input.generate(pub_keys)
     end
   end
 
-  def generate_oracle(public_keys) do
+  defp generate_oracle(public_keys) do
     output = Output.generate(public_keys, 1)
 
     %Input{

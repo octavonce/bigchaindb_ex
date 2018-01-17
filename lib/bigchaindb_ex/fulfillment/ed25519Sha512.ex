@@ -45,6 +45,21 @@ defmodule BigchaindbEx.Fulfillment.Ed25519Sha512 do
   end
 
   @doc """
+    Converts a serialized uri
+    to a fulfillment struct.
+  """
+  @spec from_uri(String.t) :: {:ok, __MODULE__.t} | {:error, String.t}
+  def from_uri(uri) when is_binary(uri) do
+    with {:ok, decoded} <- Base.decode64(uri, padding: false),
+         {:ok, struct}  <- from_asn1(decoded)
+    do
+      {:ok, struct}
+    else
+      {:error, reason} -> {:error, "Could not decode uri: #{inspect reason}"}
+    end
+  end
+
+  @doc """
     Encodes a given public key and 
     a signature to the asn1 binary
     format.

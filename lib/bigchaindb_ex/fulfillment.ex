@@ -4,10 +4,12 @@ defmodule BigchaindbEx.Fulfillment do
   """
 
   alias BigchaindbEx.Condition.{Ed25519Sha256}
-  alias BigchaindbEx.Fulfillment.{Ed25519Sha512}
+  alias BigchaindbEx.Fulfillment.{
+    Ed25519Sha512,
+    ThresholdFulfillment
+  }
 
-  # TODO: Add multiple types
-  @type t :: Ed25519Sha512.t
+  @type t :: Ed25519Sha512.t | ThresholdFulfillment.t
 
   @doc """
     Derives a condition based
@@ -41,4 +43,12 @@ defmodule BigchaindbEx.Fulfillment do
   @spec serialize_uri(__MODULE__.t) :: {:ok, String.t} | {:error, String.t}
   def serialize_uri(%Ed25519Sha512{} = ffl), do: Ed25519Sha512.serialize_uri(ffl)
   def serialize_uri(_), do: {:error, "The given fulfillment is invalid!"}
+
+  @doc """
+    Generates a fulfillment struct
+    from a given URI.
+  """
+  def from_uri(uri) when is_binary(uri) do
+    
+  end
 end

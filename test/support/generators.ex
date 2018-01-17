@@ -1,6 +1,17 @@
 defmodule BigchaindbEx.Generators do
   alias BigchaindbEx.{Crypto, Utils}
   alias BigchaindbEx.Transaction.Output
+  alias BigchaindbEx.Fulfillment.Ed25519Sha512
+
+  def gen_fulfillment do
+    {pub_key, priv_key} = keypair()
+    {:ok, sig} = Crypto.sign("Hello world", priv_key)
+
+    %Ed25519Sha512{
+      public_key: pub_key,
+      signature: sig
+    }
+  end
 
   def gen_public_keys, do: gen_public_keys(Enum.random(1..1000))
   def gen_public_keys(count) when is_integer(count) and count > 0 do
