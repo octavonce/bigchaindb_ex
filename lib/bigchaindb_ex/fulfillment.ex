@@ -4,12 +4,9 @@ defmodule BigchaindbEx.Fulfillment do
   """
 
   alias BigchaindbEx.Condition.{Ed25519Sha256}
-  alias BigchaindbEx.Fulfillment.{
-    Ed25519Sha512,
-    ThresholdFulfillment
-  }
+  alias BigchaindbEx.Fulfillment.{Ed25519Sha512}
 
-  @type t :: Ed25519Sha512.t | ThresholdFulfillment.t
+  @type t :: Ed25519Sha512.t
 
   @doc """
     Derives a condition based

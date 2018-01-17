@@ -16,7 +16,7 @@ defmodule BigchaindbEx.Fulfillment.Ed25519Sha512 do
     an ed25519Sha512 fulfillment 
     struct.
   """
-  @spec from_json(String.t) :: {:ok, __MODULE__.t} :: {:error, String.t}
+  @spec from_json(String.t) :: {:ok, __MODULE__.t} | {:error, String.t}
   def from_json(json) when is_binary(json) do
     with {:ok, decoded}           <- Poison.decode(json),
          {:ok, decoded_pub_key}   <- Base.decode64(decoded["public_key"]),
@@ -36,7 +36,7 @@ defmodule BigchaindbEx.Fulfillment.Ed25519Sha512 do
     Serializes the given fulfillment
     struct to a url-safe URI.
   """
-  @spec serialize_uri(__MODULE__.t) :: {:ok, String.t} :: {:error, String.t}
+  @spec serialize_uri(__MODULE__.t) :: {:ok, String.t} | {:error, String.t}
   def serialize_uri(%__MODULE__{} = ffl) do
     case to_asn1(ffl) do
       {:ok, bin}       -> {:ok, Base.encode64(bin, padding: false)}

@@ -18,7 +18,7 @@ defmodule BigchaindbEx.Condition.ThresholdSha256 do
     
     One way to formally interpret threshold conditions is as a boolean weighted
     threshold gate. A tree of threshold conditions forms a boolean weighted
-    threhsold circuit.
+    threshold circuit.
 
     THRESHOLD-SHA-256 is assigned the type ID 2. It relies on the SHA-256 and
     THRESHOLD feature suites which corresponds to a feature bitmask of 0x09.
@@ -27,6 +27,20 @@ defmodule BigchaindbEx.Condition.ThresholdSha256 do
     fulfilled. If the added weight of all valid subfulfillments is greater or
     equal to this number, the threshold condition is considered to be fulfilled.
   """
+
+  alias BigchaindbEx.{Fulfillment, Condition}
+
+  @type t :: %__MODULE__{
+    threshold: Integer.t,
+    subconditions: Enum.t
+  }
+
+  @enforce_keys [:threshold, :subconditions]
+  
+  defstruct [
+    :threshold, 
+    :subconditions
+  ]
   
   @type_id 2
   @type_name "threshold-sha-256"
@@ -41,4 +55,32 @@ defmodule BigchaindbEx.Condition.ThresholdSha256 do
   def type_asn1_condition,   do: @asn1_condition
   def type_asn1_fulfillment, do: @asn1_fulfillment
   def type_category,         do: @category
+
+  @doc """
+    Adds the given subcondition
+    to the threshold struct.
+  """
+  @spec add_subcondition(__MODULE__.t, String.t | Condition.t) :: {:ok, __MODULE__.t} :: {:error, String.t}
+  def add_subcondition(%__MODULE__{} = condition, subcondition) when is_binary(subcondition) do
+    case Condition.from_uri(subcondition) do
+      {:ok, subcondition} -> add_subcondition(condition, subcondition)
+      {:error, reason}    -> {:error, "Could not parse subcondition uri: #{inspect reason}"}
+    end
+  end
+  def add_subcondition(%__MODULE__{} = condition, subcondition) do
+    {:ok, Map.merge(condition, %{subconditions: Enum.concat(condition.subconditions, [subcondition])})}
+  end
+
+  @doc """
+    Derives the given fulfillment's
+    condition and adds that to the
+    struct's subconditions.
+  """
+  @spec add_subfulfillment(__MODULE__.t, String.t | Fulfillment.t) :: {:ok, __MODULE__.t} :: {:error, String.t}
+  def add_subfulfillment(%__MODULE__{} = condition, fulfillment) do
+    case Condition.from_fulfillment(fulfillment) do
+      {:ok, subcondition} -> add_subfulfillment(condition, subcondition)
+      {:error, reason}    -> {:error, "Could not add subfulfillment: #{inspect reason}"}
+    end
+  end
 end
