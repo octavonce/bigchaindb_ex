@@ -14,10 +14,25 @@ defmodule BigchaindbEx.Condition do
   """
   @spec from_uri(String.t) :: {:ok, __MODULE__.t} | {:error, String.t}
   def from_uri(uri) when is_binary(uri) do
-    # TODO: Pattern match against 
-    # the uri to dispatch to
-    # each type's from_uri fn
+    with {:ok, type} <- decode_type_from_uri(uri) do
+      ed25519_type = Ed25519Sha256.type_name()
+
+      case type do
+        ^ed25519_type  -> Ed25519Sha256.from_uri(uri)
+        _              -> {:error, "The condition type from the given uri is invalid!"}
+      end
+    else
+      {:error, reason} -> {:error, reason}
+    end
   end
+
+  @doc """
+    Converts a condition
+    to an uri.
+  """
+  @spec to_uri(__MODULE__.t) :: {:ok, String.t} | {:error, String.t}
+  def to_uri(%Ed25519Sha256{} = condition), do: Ed25519Sha256.to_uri(condition)
+  def to_uri(_), do: {:error, "The given condition is invalid!"}
 
   @doc """
     Derives a condition from

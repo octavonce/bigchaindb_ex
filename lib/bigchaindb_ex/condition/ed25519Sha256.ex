@@ -10,6 +10,7 @@ defmodule BigchaindbEx.Condition.Ed25519Sha256 do
 
   alias BigchaindbEx.{Crypto, Fulfillment, Condition}
 
+  @enforce_keys [:cost, :type_id, :hash]
   @type t :: %__MODULE__{
     cost: Integer.t,
     type_id: Integer.t,
@@ -100,6 +101,13 @@ defmodule BigchaindbEx.Condition.Ed25519Sha256 do
       {:error, reason} -> {:error, "Could not decode uri: #{inspect uri}"}
     end
   end
+
+  @doc """
+    Converts a condition struct
+    to an uri.
+  """
+  @spec to_uri(__MODULE__.t) :: {:ok, String.t} | {:error, String.t}
+  def to_uri(%__MODULE__{} = condition), do: {:ok, hash_to_uri(condition.hash)}
 
   @doc """
     Serializes a given hash

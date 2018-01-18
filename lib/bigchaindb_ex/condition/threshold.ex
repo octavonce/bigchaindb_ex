@@ -78,8 +78,11 @@ defmodule BigchaindbEx.Condition.ThresholdSha256 do
   """
   @spec add_subfulfillment(__MODULE__.t, String.t | Fulfillment.t) :: {:ok, __MODULE__.t} :: {:error, String.t}
   def add_subfulfillment(%__MODULE__{} = condition, fulfillment) do
-    case Condition.from_fulfillment(fulfillment) do
-      {:ok, subcondition} -> add_subfulfillment(condition, subcondition)
+    with {:ok, subcondition} <- Condition.from_fulfillment(fulfillment),
+         {:ok, uri}          <- Condition.to_uri(subcondition)
+    do
+      add_subcondition(condition, uri)
+    else
       {:error, reason}    -> {:error, "Could not add subfulfillment: #{inspect reason}"}
     end
   end
