@@ -37,11 +37,18 @@ defmodule BigchaindbEx.Transaction.Output do
   @spec generate(Enum.t, Integer.t) :: __MODULE__.t
   def generate([], _), do: {:error, "You must provide at least one public key!"}
   def generate([public_key], amount) when amount_is_valid(amount), do: generate(public_key, amount)
-  def generate(public_key, amount) when is_binary(public_key) and amount_is_valid(amount) do
+  def generate(public_key, amount) when is_binary(public_key) and amount_is_valid(amount) do 
     %__MODULE__{
       public_keys: [public_key],
       amount: amount,
       fulfillment: %Ed25519Sha512{public_key: public_key}
+    }
+  end
+  def generate(public_keys, amount) when is_list(public_keys) and amount_is_valid(amount) do
+    %__MODULE__{
+      public_keys: public_keys,
+      amount: amount,
+      fulfillment: Enum.map(public_keys, fn key -> %Ed25519Sha512{public_key: key} end)
     }
   end
 
