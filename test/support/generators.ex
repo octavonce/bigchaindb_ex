@@ -2,6 +2,20 @@ defmodule BigchaindbEx.Generators do
   alias BigchaindbEx.{Crypto, Utils}
   alias BigchaindbEx.Transaction.Output
   alias BigchaindbEx.Fulfillment.Ed25519Sha512
+  alias BigchaindbEx.Condition.Ed25519Sha256
+
+  def gen_hash do
+    # TODO: Generate random hash from all types
+    {pub_key, _} = keypair()
+    {:ok, hash} = Ed25519Sha256.generate_hash(pub_key)
+    hash
+  end
+
+  def gen_uri, do: gen_uri(gen_hash())
+  def gen_uri(hash) when is_bitstring(hash) do
+    # TODO: Generate random uri from all types
+    Ed25519Sha256.hash_to_uri(hash)
+  end
 
   def gen_fulfillment do
     {pub_key, priv_key} = keypair()

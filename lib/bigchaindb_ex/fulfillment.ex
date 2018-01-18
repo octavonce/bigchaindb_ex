@@ -23,7 +23,7 @@ defmodule BigchaindbEx.Fulfillment do
   @spec get_condition_uri(__MODULE__.t) :: {:ok, String.t} | {:error, String.t}
   def get_condition_uri(%Ed25519Sha512{} = ffl) do
     case Ed25519Sha256.from_fulfillment(ffl) do
-      {:ok, condition} -> {:ok, Ed25519Sha256.serialize_to_uri(condition.hash)}
+      {:ok, condition} -> {:ok, Ed25519Sha256.hash_to_uri(condition.hash)}
       {:error, reason} -> {:error, "Could not get condition from fulfillment: #{inspect reason}"}
     end
   end

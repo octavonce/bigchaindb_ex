@@ -8,8 +8,7 @@ defmodule BigchaindbEx.Condition.Ed25519Sha256 do
     which corresponds to a bitmask of 0x20.
   """
 
-  alias BigchaindbEx.Crypto
-  alias BigchaindbEx.Fulfillment
+  alias BigchaindbEx.{Crypto, Fulfillment, Condition}
 
   @type t :: %__MODULE__{
     cost: Integer.t,
@@ -60,7 +59,7 @@ defmodule BigchaindbEx.Condition.Ed25519Sha256 do
     end
   end
   def from_fulfillment(_), do: {:error, "The given fulfillment is invalid!"}
-  
+
   @doc """
     Generates a hash from a 
     given public key and the 
@@ -78,11 +77,36 @@ defmodule BigchaindbEx.Condition.Ed25519Sha256 do
   end
 
   @doc """
+    Derives a condition from
+    an encoded uri.
+  """
+  @spec from_uri(String.t) :: {:ok, __MODULE__.t} | {:error, String.t}
+  def from_uri(uri) when is_binary(uri) do
+    with {:ok, hash} <- Condition.decode_hash_from_uri(uri),
+         {:ok, type} <- Condition.decode_type_from_uri(uri)
+    do
+      cond_type = @type_name
+
+      case type do
+        ^cond_type -> 
+          {:ok, %__MODULE__{
+            cost: @constant_cost,
+            type_id: @type_id,
+            hash: hash
+          }}
+        _ -> {:error, "Could not decode uri: Type mismatch"}
+      end
+    else
+      {:error, reason} -> {:error, "Could not decode uri: #{inspect uri}"}
+    end
+  end
+
+  @doc """
     Serializes a given hash
     to an url-friendly format.
   """
-  @spec serialize_to_uri(bitstring) :: String.t
-  def serialize_to_uri(hash) when is_bitstring(hash) do
+  @spec hash_to_uri(bitstring) :: String.t
+  def hash_to_uri(hash) when is_bitstring(hash) do
     "ni:///sha-256;" <> Base.encode64(hash) <> "?fpt=" <> @type_name <> "&cost=" <> to_string(@constant_cost)
   end
 end
