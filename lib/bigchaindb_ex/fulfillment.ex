@@ -13,7 +13,7 @@ defmodule BigchaindbEx.Fulfillment do
     on the given fulfillment.
   """
   @spec get_condition(__MODULE__.t) :: {:ok, :condition} | {:error, String.t}
-  def get_condition(%Ed25519Sha512{} = ffl), do: Ed25519Sha512.from_fulfillment(ffl)
+  def get_condition(%Ed25519Sha256{} = ffl), do: Ed25519Sha256.from_fulfillment(ffl)
   def get_condition(_), do: {:error, "The given fulfillment is invalid!"}
 
   @doc """

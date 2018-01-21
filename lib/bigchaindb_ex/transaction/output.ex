@@ -31,8 +31,6 @@ defmodule BigchaindbEx.Transaction.Output do
     Generates an output struct
     from the given public keys and 
     the given amount.
-
-    TODO: Add support for ThresholdSha256 Condition 
   """
   @spec generate(Enum.t, Integer.t) :: __MODULE__.t
   def generate([], _), do: {:error, "You must provide at least one public key!"}

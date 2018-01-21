@@ -6,6 +6,21 @@ defmodule BigchaindbEx.Crypto do
   require Integer
   alias BigchaindbEx.Base58
 
+  @on_load :load_nifs
+
+  def load_nifs do
+    :erlang.load_nif('./priv/crypto_nifs', 1)
+  end
+
+  @doc """
+    Generates an ed25519 public key
+    from a given private key.
+  """
+  @spec gen_ed25519_public_key(binary) :: {:ok, binary} | {:error, String.t}
+  def gen_ed25519_public_key(_) do
+    raise "NIF gen_ed25519_public_key/1 not implemented"
+  end
+
   @doc """
     Generates a public and private key pair.
 
@@ -27,8 +42,7 @@ defmodule BigchaindbEx.Crypto do
     case decode_base58(priv_key) do
       {:ok, key} ->
         result = key
-        |> :enacl.crypto_sign_ed25519_secret_to_curve25519
-        |> :enacl_ext.curve25519_public_key
+        |> gen_ed25519_public_key
         |> encode_base58
 
         {:ok, result}

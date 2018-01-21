@@ -1,5 +1,6 @@
 defmodule BigchaindbEx.Transaction do
   alias BigchaindbEx.{Crypto, Utils}
+  alias BigchaindbEx.Transaction.{Input, Output}
 
   @type t :: %__MODULE__{
     operation: String.t,
@@ -13,7 +14,7 @@ defmodule BigchaindbEx.Transaction do
     timestamp: String.t
   }
 
-  @enforce_keys [:operation]
+  @enforce_keys [:operation, :version, :timestamp]
 
   defstruct [
     :operation,
@@ -58,7 +59,9 @@ defmodule BigchaindbEx.Transaction do
       asset: asset,
       inputs: signers,
       outputs: [{signers, 1}],
-      metadata: opts[:metadata] || %{}
+      metadata: opts[:metadata] || %{},
+      version: "1.0",
+      timestamp: Utils.gen_timestamp()
     }}
   end
   def prepare(opts = %{operation: "CREATE", asset: asset = %{data: _}, signers: signers, recipients: recipients}) 
@@ -70,7 +73,9 @@ defmodule BigchaindbEx.Transaction do
       asset: asset,
       inputs: signers,
       outputs: recipients,
-      metadata: opts[:metadata] || %{}
+      metadata: opts[:metadata] || %{},
+      version: "1.0",
+      timestamp: Utils.gen_timestamp()
     }}
   end
   def prepare(opts = %{operation: "TRANSFER", asset: asset = %{data: _}, signers: signers})
@@ -83,7 +88,9 @@ defmodule BigchaindbEx.Transaction do
       asset: asset,
       inputs: signers,
       outputs: [{signers, 1}],
-      metadata: opts[:metadata] || %{}
+      metadata: opts[:metadata] || %{},
+      version: "1.0",
+      timestamp: Utils.gen_timestamp()
     }}
   end
   def prepare(opts = %{operation: "TRANSFER", asset: asset = %{data: _}, signers: signers, recipients: recipients})
@@ -95,7 +102,9 @@ defmodule BigchaindbEx.Transaction do
       asset: asset,
       inputs: signers,
       outputs: recipients,
-      metadata: opts[:metadata] || %{}
+      metadata: opts[:metadata] || %{},
+      version: "1.0",
+      timestamp: Utils.gen_timestamp()
     }}
   end
   def prepare(_), do: {:error, "The given options are invalid!"}
@@ -110,7 +119,7 @@ defmodule BigchaindbEx.Transaction do
     # Generate public keys from the 
     # given private keys.
     key_pairs = Enum.map(priv_keys, fn p_key ->
-      case BigchaindbEx.Crypto.generate_pub_key(p_key) do
+      case Crypto.generate_pub_key(p_key) do
         {:ok, pub_key} -> {pub_key, p_key}
         {:error, _}    -> {:error, p_key}
       end
@@ -156,42 +165,22 @@ defmodule BigchaindbEx.Transaction do
 
             errors = verified_signatures
             |> Enum.filter(fn {_, _, valid} -> not valid end)
-            |> Enum.map(fn {key, _} -> key end)
+            |> Enum.map(fn {key, _, _} -> key end)
 
             if Enum.count(errors) > 0 do
               {:error, "Verifying using the given private key/s failed: #{inspect errors}"}
             else
               fulfilled_inputs = Enum.map(verified_signatures, fn {pub_key, _signature, _valid} ->
-                %{
-                  fulfillment: %{
-                    public_key: pub_key,
-                    type: "ed25519-sha-256" # TODO: Add support for multiple condition types
-                  },
-                  fulfills: nil,
-                  owners_before: [pub_key]
-                }
+                Input.generate(pub_key)
               end)
 
               fulfilled_outputs = Enum.map(tx.outputs, fn {pub_keys, amount} -> 
-                %{
-                  amount: amount,
-                  condition: %{
-                    details: %{
-                      public_key: List.first(pub_keys),
-                      type: "ed25519-sha-256" # TODO: Add support for multiple condition types
-                    },
-                    # TODO: Generate URI from asn1 encoded transaction
-                    uri: "",
-                    public_keys: pub_keys
-                  }
-                }
+                Output.generate(pub_keys, amount)
               end)
 
               fulfilled_tx = Map.merge(tx, %{
                 inputs: fulfilled_inputs,
-                outputs: fulfilled_outputs,
-                version: "1.0",
-                timestamp: Utils.gen_timestamp()
+                outputs: fulfilled_outputs
               })
 
               {:ok, fulfilled_tx}

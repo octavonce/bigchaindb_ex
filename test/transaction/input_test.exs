@@ -2,9 +2,6 @@ defmodule BigchaindbEx.Transaction.InputTest do
   use BigchaindbEx.TestCase
   alias BigchaindbEx.Transaction.{Input, Output}
 
-  # This won't pass until we support multiple pub keys
-  # for output generation.
-  # TODO: Make this pass
   property "generate/1" do
     forall pub_keys <- gen_public_keys(Enum.random(1..3)) do
       generate_oracle(pub_keys) === Input.generate(pub_keys)
