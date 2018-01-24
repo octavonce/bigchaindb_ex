@@ -17,7 +17,8 @@ defmodule BigchaindbEx.Crypto do
     from a given private key.
   """
   @spec gen_ed25519_public_key(binary) :: {:ok, binary} | {:error, String.t}
-  def gen_ed25519_public_key(_) do
+  def gen_ed25519_public_key(binary) when is_binary(binary) and byte_size(binary) == 64, do: _gen_ed25519_public_key(binary)
+  defp _gen_ed25519_public_key(_) do
     raise "NIF gen_ed25519_public_key/1 not implemented"
   end
 
@@ -39,13 +40,11 @@ defmodule BigchaindbEx.Crypto do
   """
   @spec generate_pub_key(binary) :: {:ok, binary} | {:error, String.t}
   def generate_pub_key(priv_key) when is_binary(priv_key) do
-    case decode_base58(priv_key) do
-      {:ok, key} ->
-        result = key
-        |> gen_ed25519_public_key
-        |> encode_base58
-
-        {:ok, result}
+    with {:ok, decoded}  <- decode_base58(priv_key),
+         {:ok, pk_bin} <- gen_ed25519_public_key(decoded)
+    do
+      {:ok, encode_base58(pk_bin)}
+    else
       _ -> {:error, "Could not decode the given private key!"}
     end
   end

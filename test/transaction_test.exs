@@ -68,7 +68,6 @@ defmodule BigchaindbExTransactionTest do
     with {pub, priv} <- Crypto.generate_keypair,
          {:ok, tx}   <- Transaction.prepare(operation: "CREATE", signers: pub, asset: %{data: %{bicycle: %{serial_no: 232134, manufacturer: "SpeedWheels"}}})
     do
-      IO.puts "\n DEBUG PUB_KEY: #{pub}"
       {:ok, ffl} = Transaction.fulfill(tx, priv)
       assert true
     else
