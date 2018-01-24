@@ -1,8 +1,9 @@
 defmodule BigchaindbEx.Transaction do
-  alias BigchaindbEx.{Crypto, Utils}
+  alias BigchaindbEx.{Crypto, Utils, Http}
   alias BigchaindbEx.Transaction.{Input, Output}
 
   @type t :: %__MODULE__{
+    id: String.t,
     operation: String.t,
     asset: Map.t,
     inputs: Enum.t,
@@ -17,6 +18,7 @@ defmodule BigchaindbEx.Transaction do
   @enforce_keys [:operation, :version, :timestamp]
 
   defstruct [
+    :id,
     :operation,
     :asset,
     :inputs,
@@ -178,10 +180,9 @@ defmodule BigchaindbEx.Transaction do
                 Output.generate(pub_keys, amount)
               end)
 
-              fulfilled_tx = Map.merge(tx, %{
-                inputs: fulfilled_inputs,
-                outputs: fulfilled_outputs
-              })
+              fulfilled_tx = tx
+              |> Map.merge(%{ inputs: fulfilled_inputs, outputs: fulfilled_outputs })
+              |> compute_tx_id
 
               {:ok, fulfilled_tx}
             end
@@ -196,9 +197,21 @@ defmodule BigchaindbEx.Transaction do
     Sends a fulfilled transaction to
     the bigchaindb cluster.
   """
-  @spec send(__MODULE__.t) :: {:ok, __MODULE__.t} | {:error, String.t}
-  def send(%__MODULE__{} = tx) do
-  
+  @spec send(__MODULE__.t, Map.t) :: {:ok, __MODULE__.t} | {:error, String.t}
+  def send(%__MODULE__{} = tx, headers \\ []) when is_list(headers) do
+    tx = tx
+    |> Map.from_struct
+    |> Map.delete(:conditions)
+    |> Map.delete(:timestamp)
+    |> Map.delete(:fulfillments)
+    
+    with {:ok, body} <- Poison.encode(tx) do
+      {:ok, Http.post("api/v1/transactions", [
+            headers: headers,
+            body: body])}
+    else
+      _ -> {:error, "Could not encode transaction!"}
+    end
   end
 
   @spec retrieve(String.t) :: {:ok, __MODULE__.t} | {:error, String.t}
@@ -209,6 +222,23 @@ defmodule BigchaindbEx.Transaction do
   @spec status(String.t) :: {:ok, __MODULE__.t} | {:error, String.t}
   def status(tx_id) when is_binary(tx_id) do
     
+  end
+
+  defp compute_tx_id(%__MODULE__{} = tx) do
+    parsed_inputs = Enum.map(tx.inputs, fn x -> Map.merge(x, %{fulfillment: nil}) end)
+
+    serialized = Poison.encode!(%{
+      operation: tx.operation,
+      asset: tx.asset,
+      version: tx.version,
+      timestamp: tx.timestamp,
+      inputs: parsed_inputs,
+      outputs: tx.outputs,
+      metadata: tx.metadata
+    })
+
+    {:ok, id} = :sha3.hexhash(256, serialized)
+    Map.merge(tx, %{id: id})
   end
 
   defp serialize_outputs(tx) when is_map(tx) do 

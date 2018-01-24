@@ -24,6 +24,7 @@ defmodule BigchaindbEx.Http do
       headers
       |> Map.put("app_id", @app_id)
       |> Map.put("app_key", @app_key)
+      |> Map.put("Content-Type", "application/json")
     else
       headers
     end
