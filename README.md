@@ -3,9 +3,8 @@
 A driver for bigchaindb written in elixir
 
 ## Make sure you have the following installed:
-  * elixir >= 1.5
-  * gcc
-  * libsodium >= 1.0.12
+  * elixir >= v1.5
+  * libsodium >= v1.0.12
 
 ## Installation
 

@@ -36,6 +36,7 @@ defmodule BigchaindbEx.Transaction.Input do
     from the given public keys.
   """
   @spec generate(Enum.t) :: __MODULE__.t
+  def generate(pub_key) when is_binary(pub_key), do: generate([pub_key])
   def generate(public_keys) when is_list(public_keys) do
     output = Output.generate(public_keys, 1)
     new(output.fulfillment, public_keys)
