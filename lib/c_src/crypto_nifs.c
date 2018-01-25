@@ -1,6 +1,7 @@
 #include <erl_nif.h>
 #include <sodium.h>
 #include <string.h>
+#include "sha3.h"
 
 static ERL_NIF_TERM gen_ed25519_public_key(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]) {
   unsigned char pk[crypto_sign_PUBLICKEYBYTES];

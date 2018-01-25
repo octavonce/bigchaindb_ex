@@ -237,7 +237,9 @@ defmodule BigchaindbEx.Transaction do
       metadata: tx.metadata
     })
 
+    # TODO: Replace this with nif
     {:ok, id} = :sha3.hexhash(256, serialized)
+    
     Map.merge(tx, %{id: id})
   end
 
