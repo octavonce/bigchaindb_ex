@@ -2,6 +2,11 @@ defmodule BigchaindbExCryptoTest do
   use BigchaindbEx.TestCase
   alias BigchaindbEx.{Crypto, Base58}
 
+  test "sha3_hash256" do
+    {:ok, result} = Crypto.sha3_hash256("Hello world!")
+    assert result === "ecd0e108a98e192af1d2c25055f4e3bed784b5c877204e73219a5203251feaab"
+  end
+
   property "generate_pub_key/2" do
     forall {pub_key, priv_key} <- keypair() do
       {:ok, key} = Crypto.generate_pub_key(priv_key)

@@ -23,6 +23,21 @@ defmodule BigchaindbEx.Crypto do
   end
 
   @doc """
+    Hashes a given string with the 
+    sha3 256bit algorithm.
+  """
+  @spec sha3_hash256(String.t) :: {:ok, binary} | {:error, String.t}
+  def sha3_hash256(string) when is_binary(string) do
+    case _sha3_hash256(string) do
+      {:ok, result}    -> {:ok, Hexate.encode(result)}
+      {:error, reason} -> {:error, "Could not hash string: #{reason}"}
+    end
+  end
+  defp _sha3_hash256(_) do
+    raise "NIF sha3_hash256/1 not implemented"
+  end
+
+  @doc """
     Generates a public and private key pair.
 
     ## Example
@@ -112,7 +127,8 @@ defmodule BigchaindbEx.Crypto do
   end
  
   @doc """
-    Adds padding to a hex string.
+    Adds padding to a base64
+    encoded string.
   """
   def add_base64_padding(string) when is_binary(string) do
     missing_padding = (4 - byte_size(string)) |> rem(4)  
