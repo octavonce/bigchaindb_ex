@@ -35,10 +35,10 @@ defmodule BigchaindbEx.Transaction.Input do
     Generates an input struct
     from the given public keys.
   """
-  @spec generate(Enum.t) :: __MODULE__.t
-  def generate(pub_key) when is_binary(pub_key), do: generate([pub_key])
-  def generate(public_keys) when is_list(public_keys) do
-    output = Output.generate(public_keys, 1)
+  @spec generate(Enum.t, String.t) :: __MODULE__.t
+  def generate(pub_key, signature) when is_binary(pub_key) and is_binary(signature), do: generate([pub_key], signature)
+  def generate(public_keys, signature) when is_list(public_keys) and is_binary(signature) do
+    output = Output.generate(public_keys, 1, signature)
     new(output.fulfillment, public_keys)
   end
 
@@ -49,11 +49,11 @@ defmodule BigchaindbEx.Transaction.Input do
   def to_map(%__MODULE__{} = input) do
     case Fulfillment.serialize_uri(input.fulfillment) do
       {:ok, uri} ->
-        %{
+        {:ok, %{
           owners_before: input.owners_before,
           fulfills: input.fulfills,
           fulfillment: uri
-        }  
+        }}
       {:error, reason} -> {:error, "There was an error converting the input struct: #{inspect reason}"}
     end
   end

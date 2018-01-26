@@ -26,10 +26,10 @@ defmodule BigchaindbEx.Crypto do
     Hashes a given string with the 
     sha3 256bit algorithm.
   """
-  @spec sha3_hash256(String.t) :: {:ok, binary} | {:error, String.t}
-  def sha3_hash256(string) when is_binary(string) do
+  @spec sha3_hash256(String.t, boolean) :: {:ok, binary} | {:error, String.t}
+  def sha3_hash256(string, hex \\ true) when is_binary(string) and is_boolean(hex) do
     case _sha3_hash256(string) do
-      {:ok, result}    -> {:ok, Hexate.encode(result)}
+      {:ok, result}    -> {:ok, (if hex, do: Hexate.encode(result), else: result)}
       {:error, reason} -> {:error, "Could not hash string: #{reason}"}
     end
   end

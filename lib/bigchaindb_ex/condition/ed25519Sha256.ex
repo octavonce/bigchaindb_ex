@@ -69,9 +69,10 @@ defmodule BigchaindbEx.Condition.Ed25519Sha256 do
   @spec generate_hash(String.t) :: {:ok, binary} | {:error, String.t}
   def generate_hash(public_key) when is_binary(public_key) do
     with {:ok, decoded} <- Crypto.decode_base58(public_key),
-         {:ok, asn1_binary} <- :Fingerprints.encode(:Ed25519FingerprintContents, {nil, decoded})
+         {:ok, asn1_binary} <- :Fingerprints.encode(:Ed25519FingerprintContents, {nil, decoded}),
+         {:ok, hash} <- Crypto.sha3_hash256(asn1_binary, false)
     do
-      {:ok, :crypto.hash(:sha256, asn1_binary)}
+      {:ok, hash}
     else
       {:error, reason} -> {:error, "Could not decode public key: #{inspect reason}"}
     end

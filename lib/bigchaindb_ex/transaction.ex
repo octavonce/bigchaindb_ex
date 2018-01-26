@@ -172,12 +172,20 @@ defmodule BigchaindbEx.Transaction do
             if Enum.count(errors) > 0 do
               {:error, "Verifying using the given private key/s failed: #{inspect errors}"}
             else
-              fulfilled_inputs = Enum.map(verified_signatures, fn {pub_key, _signature, _valid} ->
-                Input.generate(pub_key)
+              fulfilled_inputs = Enum.map(verified_signatures, fn {pub_key, signature, _valid} ->
+                {:ok, input} = pub_key
+                |> Input.generate(signature)
+                |> Input.to_map
+
+                input
               end)
 
               fulfilled_outputs = Enum.map(tx.outputs, fn {pub_keys, amount} -> 
-                Output.generate(pub_keys, amount)
+                {:ok, output} = pub_keys
+                |> Output.generate(amount) 
+                |> Output.to_map
+
+                output
               end)
 
               fulfilled_tx = tx

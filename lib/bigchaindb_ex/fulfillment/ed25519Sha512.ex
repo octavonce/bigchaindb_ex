@@ -65,7 +65,10 @@ defmodule BigchaindbEx.Fulfillment.Ed25519Sha512 do
     format.
   """
   @spec to_asn1(%{public_key: String.t, signature: String.t}) :: {:ok, binary} | {:error, String.t}
-  def to_asn1(%__MODULE__{} = %{public_key: public_key, signature: signature}) when is_binary(public_key) and is_binary(signature) do
+  def to_asn1(%__MODULE__{} = %{public_key: public_key, signature: signature}) 
+    when is_binary(public_key) 
+    and is_binary(signature) 
+  do
     with {:ok, pub_key} <- Crypto.decode_base58(public_key),
          {:ok, sig}     <- Crypto.decode_base58(signature)
     do
