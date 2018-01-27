@@ -116,6 +116,6 @@ defmodule BigchaindbEx.Condition.Ed25519Sha256 do
   """
   @spec hash_to_uri(bitstring) :: String.t
   def hash_to_uri(hash) when is_bitstring(hash) do
-    "ni:///sha-256;" <> Base.encode64(hash) <> "?fpt=" <> @type_name <> "&cost=" <> to_string(@constant_cost)
+    "ni:///sha-256;" <> Base.url_encode64(hash, padding: false) <> "?fpt=" <> @type_name <> "&cost=" <> to_string(@constant_cost)
   end
 end

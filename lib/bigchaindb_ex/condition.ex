@@ -49,7 +49,7 @@ defmodule BigchaindbEx.Condition do
   def decode_hash_from_uri(uri) when is_binary(uri) do
     with [_, str]    <- String.split(uri, "ni:///sha-256;"),
          [hash, _]   <- String.split(str, "?fpt="),
-         {:ok, hash} <- Base.decode64(hash)
+         {:ok, hash} <- Base.url_decode64(hash)
     do
       {:ok, hash}
     else

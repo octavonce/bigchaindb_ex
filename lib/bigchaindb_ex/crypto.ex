@@ -55,8 +55,8 @@ defmodule BigchaindbEx.Crypto do
   """
   @spec generate_pub_key(binary) :: {:ok, binary} | {:error, String.t}
   def generate_pub_key(priv_key) when is_binary(priv_key) do
-    with {:ok, decoded}  <- decode_base58(priv_key),
-         {:ok, pk_bin} <- gen_ed25519_public_key(decoded)
+    with {:ok, decoded} <- decode_base58(priv_key),
+         {:ok, pk_bin}  <- gen_ed25519_public_key(decoded)
     do
       {:ok, encode_base58(pk_bin)}
     else

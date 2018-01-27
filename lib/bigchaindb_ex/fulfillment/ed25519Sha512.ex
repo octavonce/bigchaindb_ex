@@ -18,9 +18,9 @@ defmodule BigchaindbEx.Fulfillment.Ed25519Sha512 do
   """
   @spec from_json(String.t) :: {:ok, __MODULE__.t} | {:error, String.t}
   def from_json(json) when is_binary(json) do
-    with {:ok, decoded}           <- Poison.decode(json),
-         {:ok, decoded_pub_key}   <- Base.decode64(decoded["public_key"]),
-         {:ok, decoded_signature} <- Base.decode64(decoded["signature"]) 
+    with {:ok, %{"public_key" => pub_key, "signature" => sig}}  <- Poison.decode(json),
+         {:ok, decoded_pub_key}   <- Base.url_decode64(pub_key),
+         {:ok, decoded_signature} <- Base.url_decode64(sig) 
     do
       %__MODULE__{
         public_key: decoded_pub_key,
@@ -39,7 +39,7 @@ defmodule BigchaindbEx.Fulfillment.Ed25519Sha512 do
   @spec serialize_uri(__MODULE__.t) :: {:ok, String.t} | {:error, String.t}
   def serialize_uri(%__MODULE__{} = ffl) do
     case to_asn1(ffl) do
-      {:ok, bin}       -> {:ok, Base.encode64(bin, padding: false)}
+      {:ok, bin}       -> {:ok, Base.url_encode64(bin, padding: false)}
       {:error, reason} -> {:error, "There was an error converting the fulfillment struct to asn1: #{inspect reason}"}
     end
   end
@@ -50,7 +50,7 @@ defmodule BigchaindbEx.Fulfillment.Ed25519Sha512 do
   """
   @spec from_uri(String.t) :: {:ok, __MODULE__.t} | {:error, String.t}
   def from_uri(uri) when is_binary(uri) do
-    with {:ok, decoded} <- Base.decode64(uri, padding: false),
+    with {:ok, decoded} <- Base.url_decode64(uri, padding: false),
          {:ok, struct}  <- from_asn1(decoded)
     do
       {:ok, struct}

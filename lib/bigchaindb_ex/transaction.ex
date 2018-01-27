@@ -61,7 +61,7 @@ defmodule BigchaindbEx.Transaction do
       asset: asset,
       inputs: signers,
       outputs: [{signers, 1}],
-      metadata: opts[:metadata] || %{},
+      metadata: opts[:metadata],
       version: "1.0",
       timestamp: Utils.gen_timestamp()
     }}
@@ -75,7 +75,7 @@ defmodule BigchaindbEx.Transaction do
       asset: asset,
       inputs: signers,
       outputs: recipients,
-      metadata: opts[:metadata] || %{},
+      metadata: opts[:metadata],
       version: "1.0",
       timestamp: Utils.gen_timestamp()
     }}
@@ -90,7 +90,7 @@ defmodule BigchaindbEx.Transaction do
       asset: asset,
       inputs: signers,
       outputs: [{signers, 1}],
-      metadata: opts[:metadata] || %{},
+      metadata: opts[:metadata],
       version: "1.0",
       timestamp: Utils.gen_timestamp()
     }}
@@ -104,7 +104,7 @@ defmodule BigchaindbEx.Transaction do
       asset: asset,
       inputs: signers,
       outputs: recipients,
-      metadata: opts[:metadata] || %{},
+      metadata: opts[:metadata],
       version: "1.0",
       timestamp: Utils.gen_timestamp()
     }}
