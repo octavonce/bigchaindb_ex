@@ -215,8 +215,8 @@ defmodule BigchaindbEx.Transaction do
     
     with {:ok, body} <- Poison.encode(tx) do
       {:ok, Http.post("api/v1/transactions", [
-            headers: headers,
-            body: body])}
+                      headers: headers,
+                      body: body])}
     else
       _ -> {:error, "Could not encode transaction!"}
     end

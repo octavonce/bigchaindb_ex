@@ -17,7 +17,12 @@ defmodule BigchaindbEx.Crypto do
     from a given private key.
   """
   @spec gen_ed25519_public_key(binary) :: {:ok, binary} | {:error, String.t}
-  def gen_ed25519_public_key(binary) when is_binary(binary) and byte_size(binary) == 64, do: _gen_ed25519_public_key(binary)
+  def gen_ed25519_public_key(binary) 
+    when is_binary(binary) 
+    and  byte_size(binary) == 64 
+  do 
+    _gen_ed25519_public_key(binary)
+  end
   defp _gen_ed25519_public_key(_) do
     raise "NIF gen_ed25519_public_key/1 not implemented"
   end
@@ -27,7 +32,10 @@ defmodule BigchaindbEx.Crypto do
     sha3 256bit algorithm.
   """
   @spec sha3_hash256(String.t, boolean) :: {:ok, binary} | {:error, String.t}
-  def sha3_hash256(string, hex \\ true) when is_binary(string) and is_boolean(hex) do
+  def sha3_hash256(string, hex \\ true) 
+    when is_binary(string) 
+    and  is_boolean(hex)
+  do
     case _sha3_hash256(string) do
       {:ok, result}    -> {:ok, (if hex, do: Hexate.encode(result), else: result)}
       {:error, reason} -> {:error, "Could not hash string: #{reason}"}
@@ -69,7 +77,10 @@ defmodule BigchaindbEx.Crypto do
     on a given message and a private key.
   """
   @spec sign(String.t, binary) :: {:ok, binary} | {:error, String.t}
-  def sign(message, priv_key) when is_binary(message) and is_binary(priv_key) do
+  def sign(message, priv_key) 
+    when is_binary(message) 
+    and  is_binary(priv_key)
+  do
     case decode_base58(priv_key) do
       {:ok, key} -> {:ok, :enacl.sign_detached(message, key) |> encode_base58}
       _          -> {:error, "Could not decode private key!"}

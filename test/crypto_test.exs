@@ -8,6 +8,13 @@ defmodule BigchaindbExCryptoTest do
     assert result === "ecd0e108a98e192af1d2c25055f4e3bed784b5c877204e73219a5203251feaab"
   end
 
+  property "sha3_hash256/2" do
+    forall {input, output} <- gen_sha3_io() do
+      {:ok, result} = Crypto.sha3_hash256(Hexate.decode(input))
+      result === String.downcase(output)
+    end
+  end
+
   property "generate_pub_key/2" do
     forall {pub_key, priv_key} <- keypair() do
       {:ok, key} = Crypto.generate_pub_key(priv_key)

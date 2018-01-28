@@ -23,8 +23,9 @@ defmodule BigchaindbEx.Transaction.Input do
   @doc """
     Creates a new input struct.
   """
+  def new(_, _, fulfills \\ nil)
   def new(ffl, owner_before, fulfills) when is_binary(owner_before), do: new(ffl, [owner_before], fulfills)
-  def new(fulfillment, owners_before, fulfills \\ nil) 
+  def new(fulfillment, owners_before, fulfills) 
     when is_map(fulfillment)
     and  is_list(owners_before)
     and  is_binary(fulfills)
