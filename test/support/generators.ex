@@ -33,12 +33,13 @@ defmodule BigchaindbEx.Generators do
   end
 
   def gen_output do
-    {pub_key, _} = keypair
-    Output.generate(pub_key, Enum.random(1..10000000))
+    {pub_key, priv_key} = keypair()
+    {:ok, sig} = Crypto.sign("Hello world", priv_key)
+    Output.generate(pub_key, Enum.random(1..10000000), sig)
   end
 
   def random_string(length \\ Enum.random(1..64)) do
-    :crypto.strong_rand_bytes(length) |> Base.encode64 |> binary_part(0, length)
+    :crypto.strong_rand_bytes(length) |> Base.url_encode64 |> binary_part(0, length)
   end
 
   def keypair, do: Crypto.generate_keypair

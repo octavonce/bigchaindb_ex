@@ -19,8 +19,8 @@ defmodule BigchaindbEx.Fulfillment.Ed25519Sha512 do
   @spec from_json(String.t) :: {:ok, __MODULE__.t} | {:error, String.t}
   def from_json(json) when is_binary(json) do
     with {:ok, %{"public_key" => pub_key, "signature" => sig}}  <- Poison.decode(json),
-         {:ok, decoded_pub_key}   <- Base.url_decode64(pub_key),
-         {:ok, decoded_signature} <- Base.url_decode64(sig) 
+         {:ok, decoded_pub_key}   <- Base.url_decode64(pub_key, padding: false),
+         {:ok, decoded_signature} <- Base.url_decode64(sig, padding: false) 
     do
       %__MODULE__{
         public_key: decoded_pub_key,

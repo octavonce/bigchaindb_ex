@@ -2,7 +2,8 @@ defmodule BigchaindbExCryptoTest do
   use BigchaindbEx.TestCase
   alias BigchaindbEx.{Crypto, Base58}
 
-  test "sha3_hash256" do
+  # TODO: Write property for this with test vectors
+  test "sha3_hash256/1" do
     {:ok, result} = Crypto.sha3_hash256("Hello world!")
     assert result === "ecd0e108a98e192af1d2c25055f4e3bed784b5c877204e73219a5203251feaab"
   end
@@ -39,19 +40,5 @@ defmodule BigchaindbExCryptoTest do
 
       decoded === x
     end
-  end
-
-  test "add_base64_padding/1" do
-    assert Base.encode64("I")   |> Crypto.add_base64_padding === "SQ=="
-    assert Base.encode64("AM")  |> Crypto.add_base64_padding === "QU0="
-    assert Base.encode64("TJM") |> Crypto.add_base64_padding === "VEpN"
-  end
-
-  property "remove_base64_padding/1" do
-    forall {pub_key, _} <- keypair() do
-      hex_pub_key = pub_key |> Base58.decode |> Integer.to_string(16)
-      padded = Crypto.add_base64_padding(hex_pub_key)
-      Crypto.remove_base64_padding(padded) === hex_pub_key
-    end 
   end
 end

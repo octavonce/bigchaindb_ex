@@ -28,7 +28,7 @@ defmodule BigchaindbEx.Transaction.OutputTest do
 
     {:ok, %{
       public_keys: output.public_keys,
-      amount: output.amount,
+      amount: "#{output.amount}",
       condition: %{
         details: details,
         uri: uri

@@ -23,8 +23,8 @@ defmodule BigchaindbEx.Fulfillment.Ed25519Sha512Test do
       }
 
       encoded_json = Poison.encode! %{
-        public_key: Base.encode64(public_key),
-        signature: Base.encode64(signature)
+        public_key: Base.url_encode64(public_key, padding: false),
+        signature: Base.url_encode64(signature, padding: false)
       }
       
       Ed25519Sha512.from_json(encoded_json) === struct
@@ -46,11 +46,11 @@ defmodule BigchaindbEx.Fulfillment.Ed25519Sha512Test do
 
   defp serialize_uri_oracle(ffl) do
     {:ok, bin} = Ed25519Sha512.to_asn1(ffl)
-    {:ok, Base.encode64(bin, padding: false)}
+    {:ok, Base.url_encode64(bin, padding: false)}
   end
 
   defp from_uri_oracle(uri) do
-    {:ok, decoded} = Base.decode64(uri, padding: false)
+    {:ok, decoded} = Base.url_decode64(uri, padding: false)
     {:ok, struct} = Ed25519Sha512.from_asn1(decoded)
     {:ok, struct}
   end
