@@ -5,7 +5,7 @@ defmodule BigchaindbEx.Condition.ThresholdTest do
   alias BigchaindbEx.Condition.ThresholdSha256
 
   property "add_subcondition/2" do
-    forall ffl <- gen_fulfillment() do
+    for_all ffl in &gen_fulfillment/0 do
       {:ok, subcondition} = Condition.from_fulfillment(ffl)
       {:ok, uri} = Condition.to_uri(subcondition)
       condition = %ThresholdSha256{
@@ -18,7 +18,7 @@ defmodule BigchaindbEx.Condition.ThresholdTest do
   end
 
   property "add_subfulfillment/2" do
-    forall ffl <- gen_fulfillment() do
+    for_all ffl in &gen_fulfillment/0 do
       condition = %ThresholdSha256{
         threshold: 1,
         subconditions: []

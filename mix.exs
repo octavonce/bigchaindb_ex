@@ -27,7 +27,8 @@ defmodule BigchaindbEx.Mixfile do
       {:poison, "~> 3.1"},
       {:hexate,  ">= 0.6.0"},
       {:enacl, github: "jlouis/enacl"},
-      {:eqc_ex, "~> 1.4", only: [:test]}
+      {:excheck, "~> 0.5", only: :test},
+      {:triq, github: "triqng/triq", only: :test}
     ]
   end
 end

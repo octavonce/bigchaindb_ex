@@ -8,13 +8,13 @@ defmodule BigchaindbEx.Transaction.OutputTest do
   # once all the crypto conditions are 
   # implemented.
   # property "generate/2" do
-  #   forall {pub_key, _} <- keypair do
+  #   for_all {pub_key, _} in keypair do
       
   #   end
   # end
 
   property "to_map/1" do
-    forall output <- gen_output() do
+    for_all output in &gen_output/0 do
       to_map_oracle(output) === Output.to_map(output)
     end
   end

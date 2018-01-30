@@ -5,7 +5,7 @@ defmodule BigchaindbEx.Fulfillment.Ed25519Sha512Test do
   alias BigchaindbEx.Fulfillment.Ed25519Sha512
 
   property "asn1_decode/1" do
-    forall {{pub_key, priv_key}, message} <- {keypair(), random_string()} do
+    for_all {{pub_key, priv_key}, message} in {&keypair/0, &random_string/0} do
       {:ok, sig} = Crypto.sign(message, priv_key)
       {:ok, ffl} = Ed25519Sha512.to_asn1(%Ed25519Sha512{public_key: pub_key, signature: sig})
       {:ok, %Ed25519Sha512{public_key: decoded_pub_key, signature: decoded_signature}} = Ed25519Sha512.from_asn1(ffl)
@@ -14,7 +14,7 @@ defmodule BigchaindbEx.Fulfillment.Ed25519Sha512Test do
   end
 
   property "from_json/1" do
-    forall {{public_key, private_key}, message} <- {keypair(), random_string()} do
+    for_all {{public_key, private_key}, message} in {&keypair/0, &random_string/0} do
       {:ok, signature} = Crypto.sign(message, private_key)
 
       struct = %Ed25519Sha512{
@@ -32,13 +32,13 @@ defmodule BigchaindbEx.Fulfillment.Ed25519Sha512Test do
   end
 
   property "serialize_uri/1" do
-    forall ffl <- gen_fulfillment() do
+    for_all ffl in &gen_fulfillment/0 do
       serialize_uri_oracle(ffl) === Ed25519Sha512.serialize_uri(ffl)
     end
   end
 
   property "from_uri/1" do
-    forall ffl <- gen_fulfillment() do
+    for_all ffl in &gen_fulfillment/0 do
       {:ok, uri} = Ed25519Sha512.serialize_uri(ffl)
       from_uri_oracle(uri) === Ed25519Sha512.from_uri(uri)
     end

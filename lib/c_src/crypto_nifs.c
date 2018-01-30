@@ -25,7 +25,7 @@ static ERL_NIF_TERM sha3_hash256(ErlNifEnv *env, int argc, const ERL_NIF_TERM ar
   }
 
   sha3_Init256(&c);
-  sha3_Update(&c, arg_bin.data, strlen((const char *)arg_bin.data));
+  sha3_Update(&c, arg_bin.data, arg_bin.size);
 
   hash = (unsigned char *)sha3_Finalize(&c);
 

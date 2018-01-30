@@ -3,7 +3,7 @@ defmodule BigchaindbEx.Transaction.InputTest do
   alias BigchaindbEx.Transaction.{Input, Output}
 
   property "generate/1" do
-    forall ffl <- gen_fulfillment() do
+    for_all ffl in &gen_fulfillment/0 do
       generate_oracle(ffl.public_key, ffl.signature) === Input.generate(ffl.public_key, ffl.signature)
     end
   end

@@ -3,7 +3,7 @@ defmodule BigchaindbEx.TestCase do
   
   using do
     quote do
-      use EQC.ExUnit
+      use ExCheck
       import BigchaindbEx.Generators
     end
   end
