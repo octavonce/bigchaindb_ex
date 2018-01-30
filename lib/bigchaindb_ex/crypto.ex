@@ -23,8 +23,9 @@ defmodule BigchaindbEx.Crypto do
   do 
     _gen_ed25519_public_key(binary)
   end
+
   defp _gen_ed25519_public_key(_) do
-    raise "NIF gen_ed25519_public_key/1 not implemented"
+    raise "NIF gen_ed25519_public_key/1 is not implemented!"
   end
 
   @doc """
@@ -41,8 +42,9 @@ defmodule BigchaindbEx.Crypto do
       {:error, reason} -> {:error, "Could not hash string: #{reason}"}
     end
   end
+
   defp _sha3_hash256(_) do
-    raise "NIF sha3_hash256/1 not implemented"
+    raise "NIF sha3_hash256/1 is not implemented!"
   end
 
   @doc """
@@ -53,8 +55,12 @@ defmodule BigchaindbEx.Crypto do
   """
   @spec generate_keypair :: {String.t, String.t}
   def generate_keypair do
-    %{public: pub, secret: priv} = :enacl.crypto_sign_ed25519_keypair
+    {pub, priv} = _gen_ed25519_keypair()
     {encode_base58(pub), encode_base58(priv)}
+  end
+
+  defp _gen_ed25519_keypair do
+    raise "NIF _gen_ed25519_keypair/0 is not implemented!"
   end
 
   @doc """
@@ -81,10 +87,15 @@ defmodule BigchaindbEx.Crypto do
     when is_binary(message) 
     and  is_binary(priv_key)
   do
-    case decode_base58(priv_key) do
-      {:ok, key} -> {:ok, :enacl.sign_detached(message, key) |> encode_base58}
-      _          -> {:error, "Could not decode private key!"}
+    with {:ok, priv_key}  <- decode_base58(priv_key),
+         {:ok, signature} <- _sign(message, priv_key) 
+    do
+      {:ok, encode_base58(signature)}
     end
+  end
+
+  defp _sign(_, _) do
+    raise "NIF _sign/2 is not implemented!"
   end
 
   @doc """
@@ -92,7 +103,7 @@ defmodule BigchaindbEx.Crypto do
     based on the given message
     and public key.
   """
-  @spec verify(String.t, String.t, String.t) :: boolean 
+  @spec verify(String.t, String.t, String.t) :: boolean | {:error, Atom.t}
   def verify(message, signature, pub_key) 
     when is_binary(message) 
     and  is_binary(signature) 
@@ -101,13 +112,18 @@ defmodule BigchaindbEx.Crypto do
     with {:ok, pub_key}   <- decode_base58(pub_key),
          {:ok, signature} <- decode_base58(signature)
     do
-      case :enacl.sign_verify_detached(signature, message, pub_key) do
-        {:ok, _}    -> true
-        {:error, _} -> false
+      case _verify(message, signature, pub_key) do
+        :__true__        -> true
+        :__false__       -> false
+        {:error, reason} -> {:error, reason} 
       end
     else
       _ -> raise "Could not decode public key!"
     end
+  end
+
+  defp _verify(_, _, _) do
+    raise "NIF _verify/2 is not implemented!"
   end
 
   @doc """

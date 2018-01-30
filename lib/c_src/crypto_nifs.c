@@ -3,11 +3,91 @@
 #include <string.h>
 #include "sha3.h"
 
+static ERL_NIF_TERM gen_ed25519_keypair(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]) {
+  ErlNifBinary pk_result_bin;
+  ErlNifBinary sk_result_bin;
+  ERL_NIF_TERM pk_result;
+  ERL_NIF_TERM sk_result;
+  
+  unsigned char pk[crypto_sign_PUBLICKEYBYTES];
+  unsigned char sk[crypto_sign_SECRETKEYBYTES];
+  
+  crypto_sign_keypair(pk, sk);
+
+  pk_result_bin = (ErlNifBinary) {crypto_sign_PUBLICKEYBYTES, pk};
+  sk_result_bin = (ErlNifBinary) {crypto_sign_SECRETKEYBYTES, sk};
+  
+  pk_result = enif_make_binary(env, &pk_result_bin);
+  sk_result = enif_make_binary(env, &sk_result_bin);
+
+  return enif_make_tuple2(env, pk_result, sk_result);
+}
+
+static ERL_NIF_TERM sign(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]) {
+  ERL_NIF_TERM ok_atom     = enif_make_atom(env, "ok");
+  ERL_NIF_TERM error_atom  = enif_make_atom(env, "error");
+  ERL_NIF_TERM badarg_atom = enif_make_atom(env, "badarg");
+
+  ErlNifBinary sk_bin;
+  ErlNifBinary message_bin;
+  ErlNifBinary result_bin;
+  ERL_NIF_TERM result;
+  
+  unsigned char sig[crypto_sign_BYTES];
+
+  if (!enif_inspect_iolist_as_binary(env, argv[0], &message_bin)) {
+    return enif_make_tuple2(env, error_atom, badarg_atom);
+  }
+
+  if (!enif_inspect_iolist_as_binary(env, argv[1], &sk_bin)) {
+    return enif_make_tuple2(env, error_atom, badarg_atom);
+  }
+
+  crypto_sign_detached(sig, NULL, message_bin.data, message_bin.size, sk_bin.data);
+
+  result_bin = (ErlNifBinary) {crypto_sign_BYTES, sig};
+  result = enif_make_binary(env, &result_bin);
+
+  return enif_make_tuple2(env, ok_atom, result);
+}
+
+static ERL_NIF_TERM verify(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]) {
+  ERL_NIF_TERM error_atom  = enif_make_atom(env, "error");
+  ERL_NIF_TERM badarg_atom = enif_make_atom(env, "badarg");
+  ERL_NIF_TERM true_atom = enif_make_atom(env, "__true__");
+  ERL_NIF_TERM false_atom = enif_make_atom(env, "__false__");
+
+  ErlNifBinary message_bin;
+  ErlNifBinary sig_bin;
+  ErlNifBinary pk_bin;
+  
+  if (!enif_inspect_iolist_as_binary(env, argv[0], &message_bin)) {
+    return enif_make_tuple2(env, error_atom, badarg_atom);
+  }
+
+  if (!enif_inspect_iolist_as_binary(env, argv[1], &sig_bin)) {
+    return enif_make_tuple2(env, error_atom, badarg_atom);
+  }
+
+  if (!enif_inspect_iolist_as_binary(env, argv[2], &pk_bin)) {
+    return enif_make_tuple2(env, error_atom, badarg_atom);
+  }
+
+  if (sig_bin.size != crypto_sign_BYTES) {
+    return enif_make_tuple2(env, error_atom, badarg_atom);
+  }
+
+  if (crypto_sign_verify_detached(sig_bin.data, message_bin.data, message_bin.size, pk_bin.data) != 0) {
+    return false_atom;
+  }
+  
+  return true_atom;
+}
+
 static ERL_NIF_TERM sha3_hash256(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]) {
   ERL_NIF_TERM ok_atom     = enif_make_atom(env, "ok");
   ERL_NIF_TERM error_atom  = enif_make_atom(env, "error");
   ERL_NIF_TERM badarg_atom = enif_make_atom(env, "badarg");
-  ERL_NIF_TERM badar_atom  = enif_make_atom(env, "badarity");
 
   ErlNifBinary arg_bin;
   ErlNifBinary result_bin;
@@ -15,10 +95,6 @@ static ERL_NIF_TERM sha3_hash256(ErlNifEnv *env, int argc, const ERL_NIF_TERM ar
 
   sha3_context c;
   unsigned char *hash;
-
-  if (argc != 1) {
-    return enif_make_tuple2(env, error_atom, badar_atom);
-  }
 
   if (!enif_inspect_iolist_as_binary(env, argv[0], &arg_bin)) {
     return enif_make_tuple2(env, error_atom, badarg_atom);
@@ -43,14 +119,9 @@ static ERL_NIF_TERM gen_ed25519_public_key(ErlNifEnv *env, int argc, const ERL_N
   ERL_NIF_TERM pk_result;
   ERL_NIF_TERM ok_atom    = enif_make_atom(env, "ok");
   ERL_NIF_TERM error_atom = enif_make_atom(env, "error");
-  ERL_NIF_TERM badar_atom = enif_make_atom(env, "badarity");
   ERL_NIF_TERM badarg_err = enif_make_string(env, "Invalid argument! The first arg must be a 64 byte binary!", ERL_NIF_LATIN1);
   ERL_NIF_TERM nacl_err   = enif_make_string(env, "Could not initialize libsodium!", ERL_NIF_LATIN1);
   ERL_NIF_TERM badkey_err = enif_make_string(env, "The given private key is invalid!", ERL_NIF_LATIN1);
-
-  if (argc != 1) {
-    return enif_make_tuple2(env, error_atom, badar_atom);
-  }
   
   if (sodium_init() == -1) {
     return enif_make_tuple2(env, error_atom, nacl_err);
@@ -71,6 +142,9 @@ static ERL_NIF_TERM gen_ed25519_public_key(ErlNifEnv *env, int argc, const ERL_N
 }
 
 static ErlNifFunc nif_funcs[] = {
+  {"_gen_ed25519_keypair", 0, gen_ed25519_keypair},
+  {"_sign", 2, sign},
+  {"_verify", 3, verify},
   {"_gen_ed25519_public_key", 1, gen_ed25519_public_key},
   {"_sha3_hash256", 1, sha3_hash256}
 };
