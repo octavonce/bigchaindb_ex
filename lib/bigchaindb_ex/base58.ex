@@ -1,10 +1,10 @@
 defmodule BigchaindbEx.Base58 do
-  @alphabet ~c(123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ)
+  @alphabet ~c(123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz)
 
   @doc """
     Encodes the given integer.
   """
-  def encode(x), do: _encode(x, [])
+  def encode_int(x), do: _encode(x, [])
 
   @doc """
     Decodes the given string.

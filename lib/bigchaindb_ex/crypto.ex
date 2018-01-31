@@ -3,8 +3,8 @@ defmodule BigchaindbEx.Crypto do
     This module provides cryptography utilities.
   """
 
-  require Integer
-  alias BigchaindbEx.Base58
+  use Bitwise
+  alias BigchaindbEx.{Base58, Utils}
 
   @on_load :load_nifs
 
@@ -113,9 +113,9 @@ defmodule BigchaindbEx.Crypto do
          {:ok, signature} <- decode_base58(signature)
     do
       case _verify(message, signature, pub_key) do
-        :__true__        -> true
-        :__false__       -> false
-        {:error, reason} -> {:error, reason} 
+        :__true__         -> true
+        :__false__        -> false
+        {:error, reason}  -> {:error, reason} 
       end
     else
       _ -> raise "Could not decode public key!"
@@ -131,25 +131,68 @@ defmodule BigchaindbEx.Crypto do
     base58 encoded string.
   """
   @spec encode_base58(binary) :: String.t
-  def encode_base58(str) when is_binary(str) or is_bitstring(str) do
-    hex_str = Hexate.encode(str)
-    {int, o} = Integer.parse(hex_str, 16)
-    Base58.encode(int)
+  def encode_base58(_, padding_required \\ 0)
+  def encode_base58(<<0, tail :: binary>>, padding_required) when is_integer(padding_required) do
+    encode_base58(tail, padding_required + 1)
   end
+  def encode_base58(str, padding_required) 
+    when is_binary(str) 
+    and  is_integer(padding_required)
+  do
+    result = str
+    |> String.reverse
+    |> encode_base58_parse_str
+    |> Base58.encode_int
+
+    if padding_required > 0 do
+      Enum.reduce(0..padding_required, result, fn (_, acc) -> "1" <> acc end)
+    else
+      result
+    end
+  end
+
+  defp encode_base58_parse_str(_, p \\ 1, acc \\ 0)
+  defp encode_base58_parse_str(<<head :: binary-size(1), tail :: binary>>, p, acc) do
+    <<c>> = head
+    encode_base58_parse_str(tail, p <<< 8, acc + p * c)
+  end
+  defp encode_base58_parse_str(<<>>, _, acc), do: acc
 
   @doc """
     Decodes a base58 encoded string.
   """
   @spec decode_base58(String.t) :: {:ok, binary} | {:error, RuntimeError.t}
   def decode_base58(str) when is_binary(str) do
-    decoded = str
+    {result, padding} = decode_base58_remove_padding(str)
+    decoded = result
     |> Base58.decode
-    |> Integer.to_string(16)
-    |> (fn x -> (if String.length(x) |> Integer.is_odd, do: "0#{x}", else: x) end).()
-    |> Hexate.decode
-
-    {:ok, decoded}
+    |> do_decode_base58
+    
+    if padding > 0 do
+      padded_result = Enum.reduce(0..padding, decoded, fn (_, acc) -> <<0, acc :: binary>> end)
+      {:ok, padded_result}
+    else
+      {:ok, decoded}
+    end
   rescue
     e in RuntimeError -> {:error, e}
+  end
+
+  defp do_decode_base58(_, acc \\ <<>>)
+  defp do_decode_base58(0, acc), do: acc
+  defp do_decode_base58(num, acc) 
+    when is_number(num) 
+    and  is_binary(acc)
+  do 
+    {div, mod} = Utils.divmod(num, 256)
+    do_decode_base58(div, <<mod, acc :: binary>>)
+  end
+
+  defp decode_base58_remove_padding(_, padding \\ 0)
+  defp decode_base58_remove_padding("1" <> str, padding) do
+    decode_base58_remove_padding(str, padding + 1)    
+  end
+  defp decode_base58_remove_padding(result, padding) do
+    {result, padding}
   end
 end

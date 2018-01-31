@@ -23,23 +23,17 @@ defmodule BigchaindbExCryptoTest do
     end 
   end
 
-  property "encode_base58/1" do
-    for_all x in &random_string/0 do
-      hex_str = Base.encode16(x)
-      {int, _} = Integer.parse(hex_str, 16)
-      encoded = Base58.encode(int)
-
-      encoded === Crypto.encode_base58(x)
-    end
+  test "encode_base58/2" do
+    Crypto.encode_base58("hello world") === "StV1DL6CwTryKyV"
   end
 
   property "decode_base58/1" do
-    for_all x in &random_string/0 do
-      {:ok, decoded} = x 
+    for_all str in &random_string/0 do
+      {:ok, decoded} = str
       |> Crypto.encode_base58
       |> Crypto.decode_base58
 
-      decoded === x
+      decoded === str
     end
   end
 end
