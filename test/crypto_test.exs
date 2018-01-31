@@ -2,11 +2,12 @@ defmodule BigchaindbExCryptoTest do
   use BigchaindbEx.TestCase
   alias BigchaindbEx.{Crypto, Base58}
 
-  property "sha3_hash256/2" do
-    for_all {input, output} in &gen_sha3_io/0 do
-      {:ok, result} = Crypto.sha3_hash256(Hexate.decode(input))
-      result === String.downcase(output)
-    end
+  test "sha3_hash256/2" do
+    {:ok, result1} = Crypto.sha3_hash256("字")
+    {:ok, result2} = Crypto.sha3_hash256("hello world")
+
+    assert result1 === "2b38731ba4ef72d4034bef49e87c381d1fbe75435163b391dd33249331f91fe7"
+    assert result2 === "644bcc7e564373040999aac89e7622f3ca71fba1d972fd94a31c3bfbf24e3938"
   end
 
   property "generate_pub_key/2" do

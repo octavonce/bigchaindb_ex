@@ -83,7 +83,7 @@ defmodule BigchaindbEx.Fulfillment.Ed25519Sha512 do
   @spec from_asn1(binary) :: {:ok, %__MODULE__{}} | {:error, String.t}
   def from_asn1(bytes) when is_binary(bytes) do
     case :Fulfillments.decode(:Ed25519Sha512Fulfillment, bytes) do
-      {:ok, {_, pub_key, signature}} -> {:ok, %__MODULE__{public_key: Crypto.encode_base58(pub_key), signature: Crypto.encode_base58(signature)}}
+      {:ok, {_, pub_key, signature}} -> {:ok, %__MODULE__{public_key: pub_key, signature: signature}}
       {:error, reason} -> {:error, "Could not decode fulfillment: #{inspect reason}"}
     end
   end

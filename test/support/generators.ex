@@ -4,27 +4,6 @@ defmodule BigchaindbEx.Generators do
   alias BigchaindbEx.Fulfillment.Ed25519Sha512
   alias BigchaindbEx.Condition.Ed25519Sha256
 
-  @sha3_256_test_vectors File.read!("test/support/sha3_256_test_vecs.txt")
-
-  def gen_sha3_io() do
-    io = @sha3_256_test_vectors
-    |> String.split("\n") 
-    |> Enum.filter(fn x -> x !== "" end)
-    |> Enum.random
-
-    input = io 
-    |> String.split("Msg=")
-    |> List.last
-    |> String.split("MD=")
-    |> List.first
-
-    output = io
-    |> String.split("MD=")
-    |> List.last
-
-    {input, output}
-  end
-
   def gen_hash do
     # TODO: Generate random hash from all types
     {pub_key, _} = keypair()

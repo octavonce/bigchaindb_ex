@@ -20,7 +20,7 @@ crypto_nifs:
 	$(MIX) compile
 
 priv/crypto_nifs.so: lib/c_src/crypto_nifs.c
-	$(CC) $(CFLAGS) -lsodium -shared $(LDFLAGS) -o $@ lib/c_src/crypto_nifs.c lib/c_src/sha3.c
+	$(CC) $(CFLAGS) -lsodium -shared $(LDFLAGS) -o $@ lib/c_src/crypto_nifs.c
 
 clean:
 	$(MIX) clean
