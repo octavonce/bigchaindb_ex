@@ -3,7 +3,7 @@ defmodule BigchaindbEx.Transaction.Output do
     Represents a transaction output.
   """
 
-  alias BigchaindbEx.Fulfillment
+  alias BigchaindbEx.{Fulfillment, Crypto}
   alias BigchaindbEx.Fulfillment.Ed25519Sha512
 
   @max_amount :math.pow(9 * 10, 18)
@@ -61,7 +61,7 @@ defmodule BigchaindbEx.Transaction.Output do
          {:ok, uri}     <- Fulfillment.get_condition_uri(output.fulfillment)
     do
       {:ok, %{
-        public_keys: output.public_keys,
+        public_keys: Enum.map(output.public_keys, &Crypto.encode_base58/1),
         amount: "#{output.amount}",
         condition: %{
           details: details,
@@ -76,7 +76,7 @@ defmodule BigchaindbEx.Transaction.Output do
   defp fulfillment_to_details(%Ed25519Sha512{} = ffl) do
     {:ok, %{
       type: "ed25519-sha-256",
-      public_key: ffl.public_key
+      public_key: Crypto.encode_base58(ffl.public_key)
     }}
   end
   defp fulfillment_to_details(_), do: {:error, "The given fulfillment is invalid!"}

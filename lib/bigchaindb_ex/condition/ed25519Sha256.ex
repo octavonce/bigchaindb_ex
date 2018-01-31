@@ -66,11 +66,10 @@ defmodule BigchaindbEx.Condition.Ed25519Sha256 do
     given public key and the 
     condition's fingerprint contents.
   """
-  @spec generate_hash(String.t) :: {:ok, binary} | {:error, String.t}
+  @spec generate_hash(binary) :: {:ok, binary} | {:error, String.t}
   def generate_hash(public_key) when is_binary(public_key) do
-    with {:ok, decoded} <- Crypto.decode_base58(public_key),
-         {:ok, asn1_binary} <- :Fingerprints.encode(:Ed25519FingerprintContents, {nil, decoded}),
-         {:ok, hash} <- Crypto.sha3_hash256(asn1_binary, false)
+    with {:ok, asn1_binary} <- :Fingerprints.encode(:Ed25519FingerprintContents, {nil, public_key}),
+         {:ok, hash}        <- Crypto.sha3_hash256(asn1_binary, false)
     do
       {:ok, hash}
     else

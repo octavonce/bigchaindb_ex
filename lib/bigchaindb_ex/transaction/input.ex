@@ -3,7 +3,7 @@ defmodule BigchaindbEx.Transaction.Input do
     Represents a transaction input.
   """
 
-  alias BigchaindbEx.{Fulfillment, Transaction}
+  alias BigchaindbEx.{Fulfillment, Transaction, Crypto}
   alias BigchaindbEx.Transaction.Output
 
   @type t :: %__MODULE__{
@@ -60,7 +60,7 @@ defmodule BigchaindbEx.Transaction.Input do
     case Fulfillment.serialize_uri(input.fulfillment) do
       {:ok, uri} ->
         {:ok, %{
-          owners_before: input.owners_before,
+          owners_before: Enum.map(input.owners_before, &Crypto.encode_base58/1),
           fulfills: input.fulfills,
           fulfillment: uri
         }}

@@ -53,11 +53,8 @@ defmodule BigchaindbEx.Crypto do
     ## Example
       iex> {pub_key, priv_key} = BigchaindbEx.Crypto.generate_key_pair()
   """
-  @spec generate_keypair :: {String.t, String.t}
-  def generate_keypair do
-    {pub, priv} = _gen_ed25519_keypair()
-    {encode_base58(pub), encode_base58(priv)}
-  end
+  @spec generate_keypair :: {binary, binary}
+  def generate_keypair, do: _gen_ed25519_keypair()
 
   defp _gen_ed25519_keypair do
     raise "NIF _gen_ed25519_keypair/0 is not implemented!"
@@ -69,10 +66,8 @@ defmodule BigchaindbEx.Crypto do
   """
   @spec generate_pub_key(binary) :: {:ok, binary} | {:error, String.t}
   def generate_pub_key(priv_key) when is_binary(priv_key) do
-    with {:ok, decoded} <- decode_base58(priv_key),
-         {:ok, pk_bin}  <- gen_ed25519_public_key(decoded)
-    do
-      {:ok, encode_base58(pk_bin)}
+    with {:ok, pk_bin} <- gen_ed25519_public_key(priv_key) do
+      {:ok, pk_bin}
     else
       _ -> {:error, "Could not decode the given private key!"}
     end
@@ -87,11 +82,7 @@ defmodule BigchaindbEx.Crypto do
     when is_binary(message) 
     and  is_binary(priv_key)
   do
-    with {:ok, priv_key}  <- decode_base58(priv_key),
-         {:ok, signature} <- _sign(message, priv_key) 
-    do
-      {:ok, encode_base58(signature)}
-    end
+    _sign(message, priv_key)
   end
 
   defp _sign(_, _) do
@@ -109,16 +100,10 @@ defmodule BigchaindbEx.Crypto do
     and  is_binary(signature) 
     and  is_binary(pub_key) 
   do
-    with {:ok, pub_key}   <- decode_base58(pub_key),
-         {:ok, signature} <- decode_base58(signature)
-    do
-      case _verify(message, signature, pub_key) do
-        :__true__         -> true
-        :__false__        -> false
-        {:error, reason}  -> {:error, reason} 
-      end
-    else
-      _ -> raise "Could not decode public key!"
+    case _verify(message, signature, pub_key) do
+      :__true__         -> true
+      :__false__        -> false
+      {:error, reason}  -> {:error, reason} 
     end
   end
 

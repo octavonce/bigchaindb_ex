@@ -137,8 +137,7 @@ defmodule BigchaindbEx.Transaction do
     else 
       # Serialize the transaction to json
       result = tx
-      |> Map.from_struct
-      |> serialize_outputs
+      |> serialize_struct
       |> Poison.encode
       
       case result do
@@ -249,11 +248,16 @@ defmodule BigchaindbEx.Transaction do
     Map.merge(tx, %{id: id})
   end
 
-  defp serialize_outputs(tx) when is_map(tx) do 
-    Map.merge(tx, %{
-      outputs: Enum.map(tx.outputs, fn 
-        x when is_tuple(x) -> Tuple.to_list(x)
-        x                  -> x
+  defp serialize_struct(tx) when is_map(tx) do 
+    tx
+    |> Map.from_struct
+    |> Map.merge(%{
+      inputs: Enum.map(tx.inputs, &Crypto.encode_base58/1),
+      outputs: Enum.map(tx.outputs, fn {keys, amount} -> 
+        [
+          Enum.map(keys, &Crypto.encode_base58/1), 
+          amount
+        ] 
       end)
     })
   end
