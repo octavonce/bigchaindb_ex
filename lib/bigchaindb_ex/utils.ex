@@ -29,4 +29,36 @@ defmodule BigchaindbEx.Utils do
   do
    {div(a, b), rem(a, b)}
   end
+
+  @doc """
+    Deeply encodes a map to JSON with all of 
+    it's keys in alphabetical order.
+  """
+  def encode_map_to_json_sorted_keys(map) when is_map(map) do
+    az_keys = map 
+    |> Map.keys 
+    |> Enum.sort
+
+    iodata = [
+      "{",
+      Enum.map(az_keys, fn k ->
+        v = map[k]
+        [Poison.encode!(k), ":", encode_map_to_json_sorted_keys(v)]
+      end) |> Enum.intersperse(","),
+      "}"
+    ]
+    IO.iodata_to_binary(iodata)
+  end
+  def encode_map_to_json_sorted_keys(list = [head | _]) when is_map(head) do
+    iodata = [
+      "[",
+      list
+      |> Enum.map(&encode_map_to_json_sorted_keys/1)
+      |> Enum.intersperse(","),
+      "]"
+    ]
+    
+    IO.iodata_to_binary(iodata)
+  end
+  def encode_map_to_json_sorted_keys(val), do: Poison.encode!(val)
 end

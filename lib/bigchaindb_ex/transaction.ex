@@ -136,68 +136,66 @@ defmodule BigchaindbEx.Transaction do
       {:error, "The following keys could not be decoded: #{inspect errors}"}
     else 
       # Serialize the transaction to json
-      result = tx
+      serialized_tx = tx
       |> serialize_struct
-      |> Poison.encode
+      |> Utils.encode_map_to_json_sorted_keys
       
-      case result do
-        {:error, error} -> {:error, "Could not serialize transaction! Errors: #{inspect error}"}
-        {:ok, serialized_tx} ->
-          # Sign the transaction using the 
-          # keys and the serialized tx
-          signatures = Enum.map(key_pairs, fn {pub_key, priv_key} ->
-            case Crypto.sign(serialized_tx, priv_key) do
-              {:ok, signed}    -> {signed, pub_key} 
-              {:error, reason} -> {:error, reason}
-            end
+      # Sign the transaction using the 
+      # keys and the serialized tx
+      signatures = Enum.map(key_pairs, fn {pub_key, priv_key} ->
+        case Crypto.sign(serialized_tx, priv_key) do
+          {:ok, signed}    -> {signed, pub_key} 
+          {:error, reason} -> {:error, reason}
+        end
+      end)
+
+      # Check for errors
+      errors = signatures
+      |> Enum.filter(fn {atom, _} -> atom === :error end)
+      |> Enum.map(fn {_, key} -> key end)
+
+      if Enum.count(errors) > 0 do
+        {:error, "Signing using the given private key/s failed: #{inspect errors}"}
+      else
+        verified_signatures = Enum.map(signatures, fn {sig, pub_key} -> 
+          {pub_key, sig, Crypto.verify(serialized_tx, sig, pub_key)}
+        end)
+
+        errors = verified_signatures
+        |> Enum.filter(fn {_, _, valid} -> not valid end)
+        |> Enum.map(fn {key, _, _} -> key end)
+
+        if Enum.count(errors) > 0 do
+          {:error, "Verifying using the given private key/s failed: #{inspect errors}"}
+        else
+          fulfilled_inputs = Enum.map(verified_signatures, fn {pub_key, signature, _valid} ->
+            {:ok, input} = pub_key
+            |> Input.generate(signature)
+            |> Input.to_map
+
+            input
           end)
 
-          # Check for errors
-          errors = signatures
-          |> Enum.filter(fn {atom, _} -> atom === :error end)
-          |> Enum.map(fn {_, key} -> key end)
+          fulfilled_outputs = Enum.map(tx.outputs, fn {pub_keys, amount} -> 
+            {:ok, output} = pub_keys
+            |> Output.generate(amount) 
+            |> Output.to_map
 
-          if Enum.count(errors) > 0 do
-            {:error, "Signing using the given private key/s failed: #{inspect errors}"}
-          else
-            verified_signatures = Enum.map(signatures, fn {sig, pub_key} -> 
-              {pub_key, sig, Crypto.verify(serialized_tx, sig, pub_key)}
-            end)
+            output
+          end)
 
-            errors = verified_signatures
-            |> Enum.filter(fn {_, _, valid} -> not valid end)
-            |> Enum.map(fn {key, _, _} -> key end)
+          fulfilled_tx = tx
+          |> Map.merge(%{ inputs: fulfilled_inputs, outputs: fulfilled_outputs })
+          |> compute_tx_id
 
-            if Enum.count(errors) > 0 do
-              {:error, "Verifying using the given private key/s failed: #{inspect errors}"}
-            else
-              fulfilled_inputs = Enum.map(verified_signatures, fn {pub_key, signature, _valid} ->
-                {:ok, input} = pub_key
-                |> Input.generate(signature)
-                |> Input.to_map
-
-                input
-              end)
-
-              fulfilled_outputs = Enum.map(tx.outputs, fn {pub_keys, amount} -> 
-                {:ok, output} = pub_keys
-                |> Output.generate(amount) 
-                |> Output.to_map
-
-                output
-              end)
-
-              fulfilled_tx = tx
-              |> Map.merge(%{ inputs: fulfilled_inputs, outputs: fulfilled_outputs })
-              |> compute_tx_id
-
-              {:ok, fulfilled_tx}
-            end
-          end
+          {:ok, fulfilled_tx}
+        end
       end
     end
+  rescue
+    e in RuntimeError -> {:error, "Could not fulfill transaction: #{inspect e}"}
   end
-  def fulfill(%__MODULE__{} = tx, _), do: {:error, "Invalid private key/s!"}
+  def fulfill(%__MODULE__{}, _), do: {:error, "Invalid private key/s!"}
   def fulfill(_, _), do: {:error, "You must supply a transaction object as the first argument!"}
 
   @doc """
@@ -206,19 +204,16 @@ defmodule BigchaindbEx.Transaction do
   """
   @spec send(__MODULE__.t, Map.t) :: {:ok, __MODULE__.t} | {:error, String.t}
   def send(%__MODULE__{} = tx, headers \\ []) when is_list(headers) do
-    tx = tx
+    tx_body = tx
     |> Map.from_struct
     |> Map.delete(:conditions)
     |> Map.delete(:timestamp)
     |> Map.delete(:fulfillments)
+    |> Utils.encode_map_to_json_sorted_keys
     
-    with {:ok, body} <- Poison.encode(tx) do
-      {:ok, Http.post("api/v1/transactions", [
-                      headers: headers,
-                      body: body])}
-    else
-      _ -> {:error, "Could not encode transaction!"}
-    end
+    {:ok, Http.post("api/v1/transactions", [headers: headers, body: tx_body])}
+  rescue
+    e in RuntimeError -> {:error, "Could not send transaction: #{inspect e}"}
   end
 
   @spec retrieve(String.t) :: {:ok, __MODULE__.t} | {:error, String.t}
@@ -233,15 +228,13 @@ defmodule BigchaindbEx.Transaction do
 
   defp compute_tx_id(%__MODULE__{} = tx) do
     parsed_inputs = Enum.map(tx.inputs, fn x -> Map.merge(x, %{fulfillment: nil}) end)
-
-    serialized = Poison.encode!(%{
-      operation: tx.operation,
+    serialized = Utils.encode_map_to_json_sorted_keys(%{
       asset: tx.asset,
-      version: tx.version,
-      timestamp: tx.timestamp,
       inputs: parsed_inputs,
+      metadata: tx.metadata,
+      operation: tx.operation,
       outputs: tx.outputs,
-      metadata: tx.metadata
+      version: tx.version
     })
 
     {:ok, id} = Crypto.sha3_hash256(serialized)    

@@ -34,7 +34,7 @@ defmodule BigchaindbEx.Crypto do
   """
   @spec sha3_hash256(String.t, boolean) :: {:ok, binary} | {:error, String.t}
   def sha3_hash256(string, hex \\ true) 
-    when is_binary(string) 
+    when is_binary(string)
     and  is_boolean(hex)
   do
     case _sha3_hash256(string) do

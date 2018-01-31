@@ -74,4 +74,13 @@ defmodule BigchaindbExTransactionTest do
       _ -> assert false
     end
   end
+
+  test "send/1" do
+    {pub_key, priv_key} = Crypto.generate_keypair
+    {:ok, tx} = Transaction.prepare(operation: "CREATE", signers: [pub_key], asset: %{data: %{bicycle: %{serial_no: 232134, manufacturer: "SpeedWheels"}}})
+    {:ok, tx} = Transaction.fulfill(tx, priv_key)
+    {:ok, response} = Transaction.send(tx)
+
+    assert response.status_code === 201
+  end
 end
