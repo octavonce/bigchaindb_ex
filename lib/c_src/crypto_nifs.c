@@ -1,6 +1,7 @@
 #include <erl_nif.h>
 #include <sodium.h>
 #include <string.h>
+#include "asn1/asn_application.h"
 
 #define FOR(i,n) for(i=0; i<n; ++i)
 typedef unsigned char u8;
